@@ -81,6 +81,7 @@ export const Bot = (props: BotProps & { class?: string }) => {
   createEffect(fetchTopics);
 
   const updateLastMessage = (text: string) => {
+    console.log(text);
     setMessages((data) => {
       const updated = data.map((item, i) => {
         if (i === data.length - 1) {
@@ -140,6 +141,7 @@ export const Bot = (props: BotProps & { class?: string }) => {
     const body: IncomingInput = {
       question: value,
       history: messageList,
+      socketIOClientId: socketIOClientId(),
     };
 
     // if (props.chatflowConfig) body.overrideConfig = props.chatflowConfig
@@ -196,7 +198,7 @@ export const Bot = (props: BotProps & { class?: string }) => {
     //   apiHost: props.apiHost,
     // });
     let socket: any;
-    if (selectedTopic()._id) {
+    if (selectedTopic()._id && !socketIOClientId().length && !socket) {
       const data = { isStreaming: true };
 
       if (data) {
@@ -213,6 +215,7 @@ export const Bot = (props: BotProps & { class?: string }) => {
 
       socket.on("connect", () => {
         setSocketIOClientId(socket.id);
+        socket.emit("message", "Hello my friend " + socket.id);
       });
 
       socket.on("startChat", () => {
