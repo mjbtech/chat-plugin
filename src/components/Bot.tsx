@@ -81,7 +81,6 @@ export const Bot = (props: BotProps & { class?: string }) => {
   createEffect(fetchTopics);
 
   const updateLastMessage = (text: string) => {
-    console.log(text);
     setMessages((data) => {
       const updated = data.map((item, i) => {
         if (i === data.length - 1) {
@@ -215,7 +214,6 @@ export const Bot = (props: BotProps & { class?: string }) => {
 
       socket.on("connect", () => {
         setSocketIOClientId(socket.id);
-        socket.emit("message", "Hello my friend " + socket.id);
       });
 
       socket.on("startChat", () => {
