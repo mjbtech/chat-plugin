@@ -11,13 +11,21 @@ export type IncomingInput = {
 export type MessageRequest = {
   chatflowid: string;
   apiHost?: string;
-  body?: IncomingInput;
+  body?: any;
 };
 
-export const sendMessageQuery = ({ chatflowid, apiHost = "http://localhost:3000", body }: MessageRequest) =>
+export const initiateTopic = async ({ apiHost = "http://localhost:3000", body }: MessageRequest) => {
+  await sendRequest<any>({
+    method: "POST",
+    url: `${apiHost}/api/v1/chatbot/topic-initiate`,
+    body,
+  });
+};
+
+export const sendMessageQuery = ({ apiHost = "http://localhost:3000", body }: MessageRequest) =>
   sendRequest<any>({
     method: "POST",
-    url: `${apiHost}/api/v1/prediction`,
+    url: `${apiHost}/api/v1/chatbot/prediction`,
     body,
   });
 

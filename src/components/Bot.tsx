@@ -1,5 +1,11 @@
 import { createSignal, createEffect, For, onMount } from "solid-js";
-import { sendMessageQuery, isStreamAvailableQuery, IncomingInput, getOptions } from "@/queries/sendMessageQuery";
+import {
+  sendMessageQuery,
+  isStreamAvailableQuery,
+  IncomingInput,
+  getOptions,
+  initiateTopic,
+} from "@/queries/sendMessageQuery";
 import { TextInput } from "./inputs/textInput";
 import { GuestBubble } from "./bubbles/GuestBubble";
 import { BotBubble } from "./bubbles/BotBubble";
@@ -10,6 +16,7 @@ import { Badge } from "./Badge";
 import socketIOClient from "socket.io-client";
 import { Popup } from "@/features/popup";
 import { OptionBubble } from "./bubbles/OptionBubble";
+import { Header } from "./header/Header";
 
 type messageType = "apiMessage" | "userMessage" | "usermessagewaiting" | "option";
 
@@ -30,9 +37,19 @@ export type BotProps = {
   poweredByTextColor?: string;
   badgeBackgroundColor?: string;
   fontSize?: number;
+  header?: {
+    title?: string;
+    subTitle?: string;
+    backgroundColor?: string;
+    textColor?: string;
+    avatar?: string;
+    avatarStyle?: any;
+  };
 };
 
 const defaultWelcomeMessage = "Hi there! How can I help?";
+
+const selectOptionMessage = "Please choose an 👇 option to continue";
 
 export const Bot = (props: BotProps & { class?: string }) => {
   let chatContainer: HTMLDivElement | undefined;
@@ -74,8 +91,13 @@ export const Bot = (props: BotProps & { class?: string }) => {
     const { data } = await getOptions({ chatflowid: props.chatflowid, apiHost: props.apiHost });
     setTopics(data);
     setMessages((prev) => {
-      return [...prev, { message: data.map((topic: any) => topic.topic_name).join(","), type: "option" }];
+      return [
+        ...prev,
+        { message: selectOptionMessage, type: "apiMessage" },
+        { message: data.map((topic: any) => topic.topic_name).join(","), type: "option" },
+      ];
     });
+    scrollToBottom();
   };
 
   createEffect(fetchTopics);
@@ -137,10 +159,12 @@ export const Bot = (props: BotProps & { class?: string }) => {
 
     setMessages((prevMessages) => [...prevMessages, { message: value, type: "userMessage" }]);
 
-    const body: IncomingInput = {
+    const body: any = {
       question: value,
-      history: messageList,
-      socketIOClientId: socketIOClientId(),
+      history: messageList.filter((_, i) => i > 2),
+      socket_id: socketIOClientId(),
+      topic_id: selectedTopic()._id,
+      tenant_id: props.chatflowid,
     };
 
     // if (props.chatflowConfig) body.overrideConfig = props.chatflowConfig
@@ -192,12 +216,8 @@ export const Bot = (props: BotProps & { class?: string }) => {
 
   // eslint-disable-next-line solid/reactivity
   createEffect(async () => {
-    // const { data } = await isStreamAvailableQuery({
-    //   chatflowid: props.chatflowid,
-    //   apiHost: props.apiHost,
-    // });
     let socket: any;
-    if (selectedTopic()._id && !socketIOClientId().length && !socket) {
+    if (!socketIOClientId().length) {
       const data = { isStreaming: true };
 
       if (data) {
@@ -205,11 +225,7 @@ export const Bot = (props: BotProps & { class?: string }) => {
       }
 
       socket = socketIOClient(props.apiHost as string, {
-        path: "/stream",
-        query: {
-          topic_id: selectedTopic()._id,
-          tenant_id: props.chatflowid,
-        },
+        path: "/chat/stream",
       });
 
       socket.on("connect", () => {
@@ -283,6 +299,37 @@ export const Bot = (props: BotProps & { class?: string }) => {
     return newSourceDocuments;
   };
 
+  const optionSelect = async (option: string) => {
+    const topic = topics().find((topic) => topic.topic_name === option);
+    if (topic) {
+      setLoading(true);
+      scrollToBottom();
+      await initiateTopic({
+        apiHost: props.apiHost,
+        body: {
+          topic_id: topic._id,
+          socket_id: socketIOClientId(),
+          tenant_id: props.chatflowid,
+        },
+        chatflowid: "",
+      });
+      setSelectedTopic(topic);
+      setLoading(false);
+      scrollToBottom();
+      setMessages((prev) => {
+        return [
+          ...prev,
+          { message: option, type: "userMessage" },
+          { message: `Please post your query on : ${option}`, type: "apiMessage" },
+        ];
+      });
+    }
+  };
+
+  const gotoTopic = async () => {
+    await fetchTopics();
+  };
+
   return (
     <>
       <div
@@ -292,7 +339,8 @@ export const Bot = (props: BotProps & { class?: string }) => {
           props.class
         }
       >
-        <div class="flex w-full h-full justify-center">
+        <Header {...props.header} gotoTopic={gotoTopic} />
+        <div class="flex w-full h-full justify-center pt-[50px]">
           <div
             style={{ "padding-bottom": "100px" }}
             ref={chatContainer}
@@ -329,19 +377,7 @@ export const Bot = (props: BotProps & { class?: string }) => {
                             topic_name={option}
                             backgroundColor={props.botMessage?.backgroundColor}
                             textColor={props.botMessage?.textColor}
-                            onOptionClick={() => {
-                              const topic = topics().find((topic) => topic.topic_name === option);
-                              if (topic) {
-                                setSelectedTopic(topic);
-                                setMessages((prev) => {
-                                  return [
-                                    ...prev,
-                                    { message: option, type: "userMessage" },
-                                    { message: `Please post your query on : ${option}`, type: "apiMessage" },
-                                  ];
-                                });
-                              }
-                            }}
+                            onOptionClick={() => optionSelect(option)}
                           />
                         )}
                       </For>
