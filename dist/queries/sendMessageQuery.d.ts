@@ -8,9 +8,10 @@ export type IncomingInput = {
 export type MessageRequest = {
     chatflowid: string;
     apiHost?: string;
-    body?: IncomingInput;
+    body?: any;
 };
-export declare const sendMessageQuery: ({ chatflowid, apiHost, body }: MessageRequest) => Promise<{
+export declare const initiateTopic: ({ apiHost, body }: MessageRequest) => Promise<void>;
+export declare const sendMessageQuery: ({ apiHost, body }: MessageRequest) => Promise<{
     data?: any;
     error?: Error | undefined;
 }>;

@@ -16,6 +16,14 @@ export type BotProps = {
     poweredByTextColor?: string;
     badgeBackgroundColor?: string;
     fontSize?: number;
+    header?: {
+        title?: string;
+        subTitle?: string;
+        backgroundColor?: string;
+        textColor?: string;
+        avatar?: string;
+        avatarStyle?: any;
+    };
 };
 export declare const Bot: (props: BotProps & {
     class?: string;
