@@ -1,22 +1,23 @@
-import { createSignal, createEffect, For, onMount } from "solid-js";
+import { BotMessageTheme, TextInputTheme, UserMessageTheme } from "@/features/bubble/types";
+import { Popup } from "@/features/popup";
 import {
-  sendMessageQuery,
-  isStreamAvailableQuery,
-  IncomingInput,
   getOptions,
   initiateTopic,
+  sendMessageQuery,
+  getChatflow,
+  tenantDBLoad,
+  createChain,
 } from "@/queries/sendMessageQuery";
-import { TextInput } from "./inputs/textInput";
-import { GuestBubble } from "./bubbles/GuestBubble";
-import { BotBubble } from "./bubbles/BotBubble";
-import { LoadingBubble } from "./bubbles/LoadingBubble";
-import { SourceBubble } from "./bubbles/SourceBubble";
-import { BotMessageTheme, TextInputTheme, UserMessageTheme } from "@/features/bubble/types";
-import { Badge } from "./Badge";
 import socketIOClient from "socket.io-client";
-import { Popup } from "@/features/popup";
+import { For, createEffect, createSignal, onMount } from "solid-js";
+import { Badge } from "./Badge";
+import { BotBubble } from "./bubbles/BotBubble";
+import { GuestBubble } from "./bubbles/GuestBubble";
+import { LoadingBubble } from "./bubbles/LoadingBubble";
 import { OptionBubble } from "./bubbles/OptionBubble";
+import { SourceBubble } from "./bubbles/SourceBubble";
 import { Header } from "./header/Header";
+import { TextInput } from "./inputs/textInput";
 
 type messageType = "apiMessage" | "userMessage" | "usermessagewaiting" | "option";
 
@@ -28,6 +29,7 @@ export type MessageType = {
 
 export type BotProps = {
   chatflowid: string;
+  tenantId?: string;
   apiHost?: string;
   chatflowConfig?: Record<string, unknown>;
   welcomeMessage?: string;
@@ -73,6 +75,7 @@ export const Bot = (props: BotProps & { class?: string }) => {
   const [socketIOClientId, setSocketIOClientId] = createSignal("");
   const [isChatFlowAvailableToStream, setIsChatFlowAvailableToStream] = createSignal(false);
   const [selectedTopic, setSelectedTopic] = createSignal<any>({});
+  const [chatflow, setChatflow] = createSignal<any>({});
 
   onMount(() => {
     if (!bottomSpacer) return;
@@ -88,13 +91,18 @@ export const Bot = (props: BotProps & { class?: string }) => {
   };
 
   const fetchTopics = async () => {
-    const { data } = await getOptions({ chatflowid: props.chatflowid, apiHost: props.apiHost });
-    setTopics(data);
+    const { chatflowid, apiHost, tenantId } = props;
+    console.log(props);
+    // const { data } = await getOptions({ chatflowid: props.chatflowid, apiHost: props.apiHost });
+    await tenantDBLoad({ chatflowid, apiHost, tenantId });
+    const { data } = await getChatflow({ chatflowid, apiHost, tenantId });
+    console.log(data.data);
+    setTopics(data.data.topics);
     setMessages((prev) => {
       return [
         ...prev,
         { message: selectOptionMessage, type: "apiMessage" },
-        { message: data.map((topic: any) => topic.topic_name).join(","), type: "option" },
+        { message: data.data.topics.map((topic: any) => topic.name).join(","), type: "option" },
       ];
     });
     scrollToBottom();
@@ -159,22 +167,26 @@ export const Bot = (props: BotProps & { class?: string }) => {
 
     setMessages((prevMessages) => [...prevMessages, { message: value, type: "userMessage" }]);
 
-    const body: any = {
-      question: value,
-      history: messageList.filter((_, i) => i > 2),
-      socket_id: socketIOClientId(),
-      topic_id: selectedTopic()._id,
-      tenant_id: props.chatflowid,
-    };
+    // const body: any = {
+    //   question: value,
+    //   socket_id: socketIOClientId(),
+    //   topic_id: selectedTopic()._id,
+    //   tenant_id: props.chatflowid,
+    // };
 
     // if (props.chatflowConfig) body.overrideConfig = props.chatflowConfig
 
-    if (isChatFlowAvailableToStream()) body.socketIOClientId = socketIOClientId();
+    // if (isChatFlowAvailableToStream()) body.socketIOClientId = socketIOClientId();
 
     const result = await sendMessageQuery({
       chatflowid: props.chatflowid,
       apiHost: props.apiHost,
-      body,
+      tenantId: props.tenantId,
+      session_id: socketIOClientId(),
+      topic_id: selectedTopic()._id,
+      body: {
+        question: value,
+      },
     });
 
     if (result.data) {
@@ -300,19 +312,19 @@ export const Bot = (props: BotProps & { class?: string }) => {
   };
 
   const optionSelect = async (option: string) => {
-    const topic = topics().find((topic) => topic.topic_name === option);
+    const topic = topics().find((topic) => topic.name === option);
     if (topic) {
       setLoading(true);
       scrollToBottom();
-      await initiateTopic({
+
+      await createChain({
+        tenantId: props.tenantId,
+        chatflowid: props.chatflowid,
         apiHost: props.apiHost,
-        body: {
-          topic_id: topic._id,
-          socket_id: socketIOClientId(),
-          tenant_id: props.chatflowid,
-        },
-        chatflowid: "",
+        topic_id: topic._id,
+        session_id: socketIOClientId(),
       });
+
       setSelectedTopic(topic);
       setLoading(false);
       scrollToBottom();

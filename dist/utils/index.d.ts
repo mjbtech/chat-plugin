@@ -6,6 +6,7 @@ export declare const sendRequest: <ResponseData>(params: {
     url: string;
     method: string;
     body?: Record<string, unknown> | FormData;
+    tenantId?: string;
 } | string) => Promise<{
     data?: ResponseData | undefined;
     error?: Error | undefined;
