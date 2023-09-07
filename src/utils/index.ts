@@ -16,6 +16,7 @@ export const sendRequest = async <ResponseData>(
         url: string;
         method: string;
         body?: Record<string, unknown> | FormData;
+        tenantId?: string;
       }
     | string
 ): Promise<{ data?: ResponseData; error?: Error }> => {
@@ -28,8 +29,11 @@ export const sendRequest = async <ResponseData>(
         typeof params !== "string" && isDefined(params.body)
           ? {
               "Content-Type": "application/json",
+              "x-tenant-code": typeof params !== "string" ? params?.tenantId ?? "" : "",
             }
-          : undefined,
+          : {
+              "x-tenant-code": typeof params !== "string" ? params?.tenantId ?? "" : "",
+            },
       body: typeof params !== "string" && isDefined(params.body) ? JSON.stringify(params.body) : undefined,
     });
     const data = await response.json();

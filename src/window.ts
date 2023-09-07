@@ -1,6 +1,7 @@
 /* eslint-disable solid/reactivity */
 type BotProps = {
   chatflowid: string;
+  tenantId?: string;
   apiHost?: string;
   chatflowConfig?: Record<string, unknown>;
 };
