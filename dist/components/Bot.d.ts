@@ -7,6 +7,7 @@ export type MessageType = {
 };
 export type BotProps = {
     chatflowid: string;
+    tenantId?: string;
     apiHost?: string;
     chatflowConfig?: Record<string, unknown>;
     welcomeMessage?: string;
