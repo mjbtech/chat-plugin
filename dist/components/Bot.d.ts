@@ -16,6 +16,7 @@ export type BotProps = {
     textInput?: TextInputTheme;
     poweredByTextColor?: string;
     badgeBackgroundColor?: string;
+    poweredByVisibility?: boolean;
     fontSize?: number;
     header?: {
         title?: string;
@@ -25,6 +26,15 @@ export type BotProps = {
         avatar?: string;
         avatarStyle?: any;
     };
+    loginPrompt: {
+        form_fields: {
+            field_name: string;
+            is_required: boolean;
+        }[];
+    };
+    submitButtonBackground?: string;
+    submitIcon?: Node;
+    iconBackground?: string;
 };
 export declare const Bot: (props: BotProps & {
     class?: string;

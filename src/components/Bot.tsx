@@ -1,12 +1,12 @@
 import { BotMessageTheme, TextInputTheme, UserMessageTheme } from "@/features/bubble/types";
 import { Popup } from "@/features/popup";
 import {
-  getOptions,
-  initiateTopic,
-  sendMessageQuery,
-  getChatflow,
-  tenantDBLoad,
   createChain,
+  getChatflow,
+  sendMessageQuery,
+  tenantDBLoad,
+  createUserSessionRequest,
+  getUserSession,
 } from "@/queries/sendMessageQuery";
 import socketIOClient from "socket.io-client";
 import { For, createEffect, createSignal, onMount } from "solid-js";
@@ -14,6 +14,7 @@ import { Badge } from "./Badge";
 import { BotBubble } from "./bubbles/BotBubble";
 import { GuestBubble } from "./bubbles/GuestBubble";
 import { LoadingBubble } from "./bubbles/LoadingBubble";
+import { LoginPrompt } from "./bubbles/LoginPrompt";
 import { OptionBubble } from "./bubbles/OptionBubble";
 import { SourceBubble } from "./bubbles/SourceBubble";
 import { Header } from "./header/Header";
@@ -38,6 +39,7 @@ export type BotProps = {
   textInput?: TextInputTheme;
   poweredByTextColor?: string;
   badgeBackgroundColor?: string;
+  poweredByVisibility?: boolean;
   fontSize?: number;
   header?: {
     title?: string;
@@ -47,6 +49,12 @@ export type BotProps = {
     avatar?: string;
     avatarStyle?: any;
   };
+  loginPrompt: {
+    form_fields: { field_name: string; is_required: boolean }[];
+  };
+  submitButtonBackground?: string;
+  submitIcon?: Node;
+  iconBackground?: string;
 };
 
 const defaultWelcomeMessage = "Hi there! How can I help?";
@@ -75,7 +83,26 @@ export const Bot = (props: BotProps & { class?: string }) => {
   const [socketIOClientId, setSocketIOClientId] = createSignal("");
   const [isChatFlowAvailableToStream, setIsChatFlowAvailableToStream] = createSignal(false);
   const [selectedTopic, setSelectedTopic] = createSignal<any>({});
-  const [chatflow, setChatflow] = createSignal<any>({});
+  const [userSession, setUserSession] = createSignal<any>(null);
+
+  createEffect(async () => {
+    const { chatflowid, apiHost, tenantId } = props;
+    await tenantDBLoad({ chatflowid, apiHost, tenantId });
+    const { data } = await getUserSession({ apiHost, tenantId });
+    if (data?.data) {
+      setUserSession(data.data);
+    }
+  });
+
+  const createUserSession = async (values: any) => {
+    let body = {
+      email: values.Email,
+      createdAt: new Date(),
+      meta_data: values,
+    };
+    const user = await createUserSessionRequest({ apiHost: props.apiHost, tenantId: props.tenantId, body });
+    setUserSession(user);
+  };
 
   onMount(() => {
     if (!bottomSpacer) return;
@@ -92,23 +119,27 @@ export const Bot = (props: BotProps & { class?: string }) => {
 
   const fetchTopics = async () => {
     const { chatflowid, apiHost, tenantId } = props;
-    console.log(props);
-    // const { data } = await getOptions({ chatflowid: props.chatflowid, apiHost: props.apiHost });
-    await tenantDBLoad({ chatflowid, apiHost, tenantId });
     const { data } = await getChatflow({ chatflowid, apiHost, tenantId });
-    console.log(data.data);
     setTopics(data.data.topics);
-    setMessages((prev) => {
-      return [
-        ...prev,
-        { message: selectOptionMessage, type: "apiMessage" },
-        { message: data.data.topics.map((topic: any) => topic.name).join(","), type: "option" },
-      ];
-    });
+    if (data.data.topics.length === 1) {
+      optionSelect(data.data.topics[0].name);
+    } else {
+      setMessages((prev) => {
+        return [
+          ...prev,
+          { message: selectOptionMessage, type: "apiMessage" },
+          { message: data.data.topics.map((topic: any) => topic.name).join(","), type: "option" },
+        ];
+      });
+    }
     scrollToBottom();
   };
 
-  createEffect(fetchTopics);
+  createEffect(() => {
+    if (userSession()) {
+      fetchTopics();
+    }
+  }, [userSession()]);
 
   const updateLastMessage = (text: string) => {
     setMessages((data) => {
@@ -425,6 +456,9 @@ export const Bot = (props: BotProps & { class?: string }) => {
                 </>
               )}
             </For>
+            {!userSession() ? (
+              <LoginPrompt formFields={props.loginPrompt.form_fields} onSubmit={createUserSession} />
+            ) : null}
           </div>
           <TextInput
             backgroundColor={props.textInput?.backgroundColor}
@@ -436,11 +470,13 @@ export const Bot = (props: BotProps & { class?: string }) => {
             onSubmit={handleSubmit}
           />
         </div>
-        <Badge
-          badgeBackgroundColor={props.badgeBackgroundColor}
-          poweredByTextColor={props.poweredByTextColor}
-          botContainer={botContainer}
-        />
+        {props.poweredByVisibility ? (
+          <Badge
+            badgeBackgroundColor={props.badgeBackgroundColor}
+            poweredByTextColor={props.poweredByTextColor}
+            botContainer={botContainer}
+          />
+        ) : null}
         <BottomSpacer ref={bottomSpacer} />
       </div>
       {sourcePopupOpen() && (

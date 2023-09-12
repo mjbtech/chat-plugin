@@ -37,6 +37,12 @@ export type PredictRequest = {
   body?: any;
 };
 
+export type UserSessionRequest = {
+  apiHost?: string;
+  tenantId?: string;
+  body?: any;
+};
+
 export const initiateTopic = async ({ apiHost = "http://localhost:3000", body }: MessageRequest) => {
   await sendRequest<any>({
     method: "POST",
@@ -85,6 +91,23 @@ export const getChatflow = ({ chatflowid, apiHost = "http://localhost:3000", ten
   return sendRequest<any>({
     method: "GET",
     url: `${apiHost}/api/v1/chatflow/${chatflowid}`,
+    tenantId,
+  });
+};
+
+export const createUserSessionRequest = ({ apiHost = "http://localhost:3000", body, tenantId }: UserSessionRequest) => {
+  return sendRequest<any>({
+    method: "POST",
+    url: `${apiHost}/api/v1/user-session`,
+    body,
+    tenantId,
+  });
+};
+
+export const getUserSession = ({ apiHost, tenantId }: UserSessionRequest) => {
+  return sendRequest<any>({
+    method: "GET",
+    url: `${apiHost}/api/v1/user-session`,
     tenantId,
   });
 };
