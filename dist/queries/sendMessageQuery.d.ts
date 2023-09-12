@@ -30,6 +30,11 @@ export type PredictRequest = {
     session_id?: string;
     body?: any;
 };
+export type UserSessionRequest = {
+    apiHost?: string;
+    tenantId?: string;
+    body?: any;
+};
 export declare const initiateTopic: ({ apiHost, body }: MessageRequest) => Promise<void>;
 export declare const sendMessageQuery: ({ apiHost, tenantId, chatflowid, topic_id, session_id, body, }: PredictRequest) => Promise<{
     data?: any;
@@ -48,6 +53,14 @@ export declare const tenantDBLoad: ({ chatflowid, apiHost, tenantId }: ChatflowR
     error?: Error | undefined;
 }>;
 export declare const getChatflow: ({ chatflowid, apiHost, tenantId }: ChatflowRequest) => Promise<{
+    data?: any;
+    error?: Error | undefined;
+}>;
+export declare const createUserSessionRequest: ({ apiHost, body, tenantId }: UserSessionRequest) => Promise<{
+    data?: any;
+    error?: Error | undefined;
+}>;
+export declare const getUserSession: ({ apiHost, tenantId }: UserSessionRequest) => Promise<{
     data?: any;
     error?: Error | undefined;
 }>;

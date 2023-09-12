@@ -48,6 +48,9 @@ export const Full = (props: FullProps, { element }: { element: HTMLElement }) =>
             tenantId={props.tenantId}
             chatflowConfig={props.chatflowConfig}
             apiHost={props.apiHost}
+            loginPrompt={props.loginPrompt}
+            poweredByVisibility={props.poweredByVisibility}
+            header={props.header}
           />
         </div>
       </Show>

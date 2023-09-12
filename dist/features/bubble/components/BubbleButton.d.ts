@@ -1,4 +1,4 @@
-import { ButtonTheme } from '../types';
+import { ButtonTheme } from "../types";
 type Props = ButtonTheme & {
     isBotOpened: boolean;
     toggleBot: () => void;

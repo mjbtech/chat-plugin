@@ -61,6 +61,7 @@ export const Bubble = (props: BubbleProps) => {
             chatflowConfig={props.chatflowConfig}
             tenantId={props.tenantId}
             apiHost={props.apiHost}
+            loginPrompt={props.loginPrompt}
           />
         </Show>
       </div>

@@ -3,6 +3,10 @@ type BotProps = {
   chatflowid: string;
   tenantId?: string;
   apiHost?: string;
+  loginPrompt: {
+    form_fields: { field_name: string; is_required: boolean }[];
+  };
+  poweredByVisibility: boolean;
   chatflowConfig?: Record<string, unknown>;
 };
 
