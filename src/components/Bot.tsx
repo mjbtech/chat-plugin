@@ -61,7 +61,7 @@ const defaultWelcomeMessage = "Hi there! How can I help?";
 
 const selectOptionMessage = "Please choose an 👇 option to continue";
 
-export const Bot = (props: BotProps & { class?: string }) => {
+export const Bot = (props: BotProps & { class?: string; onMax?: () => void; isMax?: boolean }) => {
   let chatContainer: HTMLDivElement | undefined;
   let bottomSpacer: HTMLDivElement | undefined;
   let botContainer: HTMLDivElement | undefined;
@@ -382,7 +382,7 @@ export const Bot = (props: BotProps & { class?: string }) => {
           props.class
         }
       >
-        <Header {...props.header} gotoTopic={gotoTopic} />
+        <Header {...props.header} gotoTopic={gotoTopic} onMax={props.onMax} isMax={props.isMax} />
         <div class="flex w-full h-full justify-center pt-[50px]">
           <div
             style={{ "padding-bottom": "100px" }}
