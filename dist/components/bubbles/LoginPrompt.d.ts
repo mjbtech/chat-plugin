@@ -1,5 +1,5 @@
 type Props = {
-    formFields: {
+    formFields?: {
         field_name: string;
         is_required: boolean;
     }[];

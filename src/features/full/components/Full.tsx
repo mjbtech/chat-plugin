@@ -49,8 +49,8 @@ export const Full = (props: FullProps, { element }: { element: HTMLElement }) =>
             chatflowConfig={props.chatflowConfig}
             apiHost={props.apiHost}
             loginPrompt={props.loginPrompt}
-            poweredByVisibility={props.poweredByVisibility}
-            header={props.header}
+            poweredByVisibility={props.theme?.poweredByVisibility}
+            header={props?.theme?.header}
           />
         </div>
       </Show>

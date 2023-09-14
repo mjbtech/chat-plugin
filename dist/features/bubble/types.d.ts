@@ -2,6 +2,18 @@ export type BubbleParams = {
     theme?: BubbleTheme;
 };
 export type BubbleTheme = {
+    poweredByVisibility?: boolean;
+    header?: {
+        title?: string;
+        subTitle?: string;
+        backgroundColor?: string;
+        textColor?: string;
+        avatar?: string;
+    };
+    loginPrompt: {
+        field_name: string;
+        is_required: boolean;
+    }[];
     chatWindow?: ChatWindowTheme;
     button?: ButtonTheme;
 };
@@ -35,7 +47,7 @@ export type ChatWindowTheme = {
     poweredByTextColor?: string;
 };
 export type ButtonTheme = {
-    size?: 'medium' | 'large';
+    size?: "medium" | "large";
     backgroundColor?: string;
     iconColor?: string;
     customIconSrc?: string;

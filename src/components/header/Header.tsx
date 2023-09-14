@@ -25,7 +25,7 @@ Marked.setOptions({ isNoP: true });
 export const Header = (props: Props) => {
   return (
     <div
-      class="w-full h-16 py-3 fixed flex px-6 items-center z-[999]"
+      class="w-full h-16 py-3 flex px-6 items-center z-[999]"
       style={{
         "background-color": props.backgroundColor ?? defaultBackgroundColor,
         color: props.textColor ?? defaultTextColor,
