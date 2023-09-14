@@ -1,7 +1,7 @@
 import { createSignal } from "solid-js";
 
 type Props = {
-  formFields: {
+  formFields?: {
     field_name: string;
     is_required: boolean;
   }[];
@@ -37,20 +37,19 @@ export const LoginPrompt = (props: Props) => {
                     <h4 class="font-semibold pr-8">Let us know how to contact you</h4>
                   </div>
                   <div class="mb-4">
-                    {props.formFields.map((field) => (
-                      <>
-                        <label class="block text-sm font-medium mb-1">Email</label>
+                    {props?.formFields?.map((field) => (
+                      <div class="mb-5">
+                        <label class="block text-sm font-medium mb-1">{field.field_name}</label>
                         <div class="flex w-full rounded bg-white">
                           <input
                             class="min-w-0 p-1 flex-auto w-full rounded bg-inherit px-3 py-2 focus:outline-none focus:ring-none sm:text-sm border border-gray-300"
-                            type="text"
+                            type={field.field_name.toLowerCase().indexOf("email") > -1 ? "email" : "text"}
                             name={field.field_name}
                             required={field.is_required}
-                            // placeholder={field.field_name}
                             onChange={onChange} // Assuming you have an `onChange` function defined
                           />
                         </div>
-                      </>
+                      </div>
                     ))}
                   </div>
                   <div class="flex justify-between items-end">

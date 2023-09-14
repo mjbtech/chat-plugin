@@ -4,6 +4,7 @@ type Props = {
   botContainer: HTMLDivElement | undefined;
   poweredByTextColor?: string;
   badgeBackgroundColor?: string;
+  visibility?: boolean;
 };
 
 const defaultTextColor = "#303235";
@@ -48,6 +49,7 @@ export const Badge = (props: Props) => {
         "text-align": "center",
         color: props.poweredByTextColor ?? defaultTextColor,
         "background-color": props.badgeBackgroundColor ?? "#ffffff",
+        display: props.visibility ? "block" : "none",
       }}
     >
       Powered by

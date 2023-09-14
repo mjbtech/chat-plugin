@@ -40,6 +40,7 @@ export type PredictRequest = {
 export type UserSessionRequest = {
   apiHost?: string;
   tenantId?: string;
+  session_id?: string;
   body?: any;
 };
 
@@ -104,10 +105,10 @@ export const createUserSessionRequest = ({ apiHost = "http://localhost:3000", bo
   });
 };
 
-export const getUserSession = ({ apiHost, tenantId }: UserSessionRequest) => {
+export const getUserSession = ({ apiHost, tenantId, session_id }: UserSessionRequest) => {
   return sendRequest<any>({
     method: "GET",
-    url: `${apiHost}/api/v1/user-session`,
+    url: `${apiHost}/api/v1/user-session/${session_id}`,
     tenantId,
   });
 };

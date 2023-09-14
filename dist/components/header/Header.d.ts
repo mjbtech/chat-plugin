@@ -7,6 +7,8 @@ type Props = {
     avatar?: string;
     avatarStyle?: any;
     gotoTopic?: any;
+    isMax?: boolean;
+    onMax?: () => void;
 };
 export declare const Header: (props: Props) => JSX.Element;
 export {};

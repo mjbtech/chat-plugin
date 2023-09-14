@@ -33,6 +33,7 @@ export type PredictRequest = {
 export type UserSessionRequest = {
     apiHost?: string;
     tenantId?: string;
+    session_id?: string;
     body?: any;
 };
 export declare const initiateTopic: ({ apiHost, body }: MessageRequest) => Promise<void>;
@@ -60,7 +61,7 @@ export declare const createUserSessionRequest: ({ apiHost, body, tenantId }: Use
     data?: any;
     error?: Error | undefined;
 }>;
-export declare const getUserSession: ({ apiHost, tenantId }: UserSessionRequest) => Promise<{
+export declare const getUserSession: ({ apiHost, tenantId, session_id }: UserSessionRequest) => Promise<{
     data?: any;
     error?: Error | undefined;
 }>;

@@ -26,18 +26,18 @@ export type BotProps = {
         avatar?: string;
         avatarStyle?: any;
     };
-    loginPrompt: {
-        form_fields: {
-            field_name: string;
-            is_required: boolean;
-        }[];
-    };
+    loginPrompt?: {
+        field_name: string;
+        is_required: boolean;
+    }[];
     submitButtonBackground?: string;
     submitIcon?: Node;
     iconBackground?: string;
 };
 export declare const Bot: (props: BotProps & {
     class?: string;
+    onMax?: () => void;
+    isMax?: boolean;
 }) => import("solid-js").JSX.Element;
 export {};
 //# sourceMappingURL=Bot.d.ts.map

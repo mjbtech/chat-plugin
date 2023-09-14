@@ -4,16 +4,17 @@ export const defaultBotProps: BubbleProps = {
   chatflowid: "",
   tenantId: undefined,
   apiHost: undefined,
-  loginPrompt: {
-    form_fields: [
+
+  header: undefined,
+  poweredByVisibility: true,
+  chatflowConfig: undefined,
+  theme: {
+    loginPrompt: [
       {
         field_name: "Email",
         is_required: true,
       },
     ],
+    poweredByVisibility: true,
   },
-  header: undefined,
-  poweredByVisibility: true,
-  chatflowConfig: undefined,
-  theme: undefined,
 };

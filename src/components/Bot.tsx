@@ -19,6 +19,7 @@ import { OptionBubble } from "./bubbles/OptionBubble";
 import { SourceBubble } from "./bubbles/SourceBubble";
 import { Header } from "./header/Header";
 import { TextInput } from "./inputs/textInput";
+import { getCookie, setCookie } from "../utils/cookieUtil";
 
 type messageType = "apiMessage" | "userMessage" | "usermessagewaiting" | "option";
 
@@ -49,9 +50,7 @@ export type BotProps = {
     avatar?: string;
     avatarStyle?: any;
   };
-  loginPrompt: {
-    form_fields: { field_name: string; is_required: boolean }[];
-  };
+  loginPrompt?: { field_name: string; is_required: boolean }[];
   submitButtonBackground?: string;
   submitIcon?: Node;
   iconBackground?: string;
@@ -61,7 +60,7 @@ const defaultWelcomeMessage = "Hi there! How can I help?";
 
 const selectOptionMessage = "Please choose an 👇 option to continue";
 
-export const Bot = (props: BotProps & { class?: string }) => {
+export const Bot = (props: BotProps & { class?: string; onMax?: () => void; isMax?: boolean }) => {
   let chatContainer: HTMLDivElement | undefined;
   let bottomSpacer: HTMLDivElement | undefined;
   let botContainer: HTMLDivElement | undefined;
@@ -71,6 +70,7 @@ export const Bot = (props: BotProps & { class?: string }) => {
   const [sourcePopupOpen, setSourcePopupOpen] = createSignal(false);
   const [sourcePopupSrc, setSourcePopupSrc] = createSignal({});
   const [topics, setTopics] = createSignal<any[]>([]);
+  const [poweredByVisibility, setPoweredByVisibility] = createSignal(true);
   const [messages, setMessages] = createSignal<MessageType[]>(
     [
       {
@@ -84,14 +84,21 @@ export const Bot = (props: BotProps & { class?: string }) => {
   const [isChatFlowAvailableToStream, setIsChatFlowAvailableToStream] = createSignal(false);
   const [selectedTopic, setSelectedTopic] = createSignal<any>({});
   const [userSession, setUserSession] = createSignal<any>(null);
+  const [sessionLoading, setSessionLoading] = createSignal<boolean>(true);
 
   createEffect(async () => {
     const { chatflowid, apiHost, tenantId } = props;
     await tenantDBLoad({ chatflowid, apiHost, tenantId });
-    const { data } = await getUserSession({ apiHost, tenantId });
-    if (data?.data) {
-      setUserSession(data.data);
+    const cookieVal = getCookie("session_user");
+    let cookieUser = cookieVal ? JSON.parse(cookieVal) : null;
+
+    if (cookieUser) {
+      const { data } = await getUserSession({ apiHost, tenantId, session_id: cookieUser.data?._id });
+      if (data?.data) {
+        setUserSession(data.data);
+      }
     }
+    setSessionLoading(false);
   });
 
   const createUserSession = async (values: any) => {
@@ -101,6 +108,9 @@ export const Bot = (props: BotProps & { class?: string }) => {
       meta_data: values,
     };
     const user = await createUserSessionRequest({ apiHost: props.apiHost, tenantId: props.tenantId, body });
+    if (user?.data) {
+      setCookie("session_user", JSON.stringify(user.data), 30);
+    }
     setUserSession(user);
   };
 
@@ -120,6 +130,7 @@ export const Bot = (props: BotProps & { class?: string }) => {
   const fetchTopics = async () => {
     const { chatflowid, apiHost, tenantId } = props;
     const { data } = await getChatflow({ chatflowid, apiHost, tenantId });
+    if (data?.data?.chatbot_theme) setPoweredByVisibility(data?.data?.chatbot_theme?.powered_by_visibility);
     setTopics(data.data.topics);
     if (data.data.topics.length === 1) {
       optionSelect(data.data.topics[0].name);
@@ -382,10 +393,10 @@ export const Bot = (props: BotProps & { class?: string }) => {
           props.class
         }
       >
-        <Header {...props.header} gotoTopic={gotoTopic} />
-        <div class="flex w-full h-full justify-center pt-[50px]">
+        <Header {...props.header} gotoTopic={gotoTopic} onMax={props.onMax} isMax={props.isMax} />
+        <div class="flex w-full h-full justify-center">
           <div
-            style={{ "padding-bottom": "100px" }}
+            style={{ "padding-bottom": "160px" }}
             ref={chatContainer}
             class="overflow-y-scroll min-w-full w-full min-h-full px-3 pt-10 relative scrollable-container chatbot-chat-view scroll-smooth"
           >
@@ -456,8 +467,11 @@ export const Bot = (props: BotProps & { class?: string }) => {
                 </>
               )}
             </For>
-            {!userSession() ? (
-              <LoginPrompt formFields={props.loginPrompt.form_fields} onSubmit={createUserSession} />
+            {!userSession() && !sessionLoading() ? (
+              <LoginPrompt
+                formFields={props?.loginPrompt ?? [{ field_name: "Email", is_required: true }]}
+                onSubmit={createUserSession}
+              />
             ) : null}
           </div>
           <TextInput
@@ -470,13 +484,12 @@ export const Bot = (props: BotProps & { class?: string }) => {
             onSubmit={handleSubmit}
           />
         </div>
-        {props.poweredByVisibility ? (
-          <Badge
-            badgeBackgroundColor={props.badgeBackgroundColor}
-            poweredByTextColor={props.poweredByTextColor}
-            botContainer={botContainer}
-          />
-        ) : null}
+        <Badge
+          badgeBackgroundColor={props.badgeBackgroundColor}
+          poweredByTextColor={props.poweredByTextColor}
+          botContainer={botContainer}
+          visibility={poweredByVisibility()}
+        />
         <BottomSpacer ref={bottomSpacer} />
       </div>
       {sourcePopupOpen() && (
