@@ -29,6 +29,7 @@ export type PredictRequest = {
     topic_id?: string;
     session_id?: string;
     body?: any;
+    userSessionId?: string;
 };
 export type UserSessionRequest = {
     apiHost?: string;
@@ -37,7 +38,7 @@ export type UserSessionRequest = {
     body?: any;
 };
 export declare const initiateTopic: ({ apiHost, body }: MessageRequest) => Promise<void>;
-export declare const sendMessageQuery: ({ apiHost, tenantId, chatflowid, topic_id, session_id, body, }: PredictRequest) => Promise<{
+export declare const sendMessageQuery: ({ apiHost, tenantId, chatflowid, topic_id, session_id, body, userSessionId, }: PredictRequest) => Promise<{
     data?: any;
     error?: Error | undefined;
 }>;
