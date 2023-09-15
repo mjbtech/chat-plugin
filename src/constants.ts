@@ -4,8 +4,6 @@ export const defaultBotProps: BubbleProps = {
   chatflowid: "",
   tenantId: undefined,
   apiHost: undefined,
-
-  header: undefined,
   poweredByVisibility: true,
   chatflowConfig: undefined,
   theme: {

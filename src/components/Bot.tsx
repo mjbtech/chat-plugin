@@ -401,7 +401,8 @@ export const Bot = (props: BotProps & { class?: string; onMax?: () => void; isMa
       >
         <Header
           avatar={props.header?.avatar}
-          backgroundColor={props.header?.avatar}
+          backgroundColor={props.header?.backgroundColor}
+          textColor={props.header?.textColor}
           subTitle={props.header?.subTitle}
           title={props.header?.title}
           gotoTopic={gotoTopic}
