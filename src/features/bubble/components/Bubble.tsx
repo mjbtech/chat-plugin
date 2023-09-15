@@ -25,7 +25,7 @@ export const Bubble = (props: BubbleProps) => {
   const toggleBot = () => {
     isBotOpened() ? closeBot() : openBot();
   };
-
+  console.log(bubbleProps.theme?.chatWindow?.width);
   return (
     <>
       <style>{styles}</style>
@@ -36,6 +36,13 @@ export const Bubble = (props: BubbleProps) => {
           height: bubbleProps.theme?.chatWindow?.height
             ? `${bubbleProps.theme?.chatWindow?.height.toString()}px`
             : "calc(100% - 100px)",
+          width: isMax()
+            ? "90%"
+            : bubbleProps.theme?.chatWindow?.width
+            ? `${bubbleProps.theme?.chatWindow?.width.toString()}px`
+            : window.innerWidth > 600
+            ? "400px"
+            : "100%",
           transition: "transform 200ms cubic-bezier(0, 1.2, 1, 1), opacity 150ms ease-out",
           "transform-origin": "bottom right",
           transform: isBotOpened() ? "scale3d(1, 1, 1)" : "scale3d(0, 0, 1)",
