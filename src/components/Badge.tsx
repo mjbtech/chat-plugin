@@ -55,14 +55,14 @@ export const Badge = (props: Props) => {
       Powered by
       <a
         ref={liteBadge}
-        href={"https://mjbtech.com"}
+        href={"https://chatgenius.ai"}
         target="_blank"
         rel="noopener noreferrer"
         class="lite-badge"
         id="lite-badge"
         style={{ "font-weight": "bold", color: props.poweredByTextColor ?? defaultTextColor }}
       >
-        <span> MJB</span>
+        <span>&nbsp;ChatGenius.ai</span>
       </a>
     </span>
   );
