@@ -1,7 +1,3 @@
-import { JSX, Show, onMount } from "solid-js";
-import { Avatar } from "../avatars/Avatar";
-import { Marked } from "@ts-stack/markdown";
-
 type Props = {
   title?: string;
   subTitle?: string;
@@ -19,8 +15,6 @@ const defaultTextColor = "#fff";
 const defaultAvatar = "https://cdn-icons-png.flaticon.com/512/4712/4712035.png";
 const defaultTitle = "AI Assistant";
 const defaultSubTitle = "Ask me anything..!";
-
-Marked.setOptions({ isNoP: true });
 
 export const Header = (props: Props) => {
   return (

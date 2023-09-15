@@ -1,4 +1,3 @@
-import { JSX } from "solid-js";
 type Props = {
     title?: string;
     subTitle?: string;
@@ -10,6 +9,6 @@ type Props = {
     isMax?: boolean;
     onMax?: () => void;
 };
-export declare const Header: (props: Props) => JSX.Element;
+export declare const Header: (props: Props) => import("solid-js").JSX.Element;
 export {};
 //# sourceMappingURL=Header.d.ts.map

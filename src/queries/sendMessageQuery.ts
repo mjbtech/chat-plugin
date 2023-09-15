@@ -35,6 +35,7 @@ export type PredictRequest = {
   topic_id?: string;
   session_id?: string;
   body?: any;
+  userSessionId?: string;
 };
 
 export type UserSessionRequest = {
@@ -59,10 +60,11 @@ export const sendMessageQuery = ({
   topic_id,
   session_id,
   body,
+  userSessionId,
 }: PredictRequest) =>
   sendRequest<any>({
     method: "POST",
-    url: `${apiHost}/api/v1/chatflow/${chatflowid}/predict/${topic_id}/session/${session_id}`,
+    url: `${apiHost}/api/v1/chatflow/${chatflowid}/predict/${topic_id}/session/${session_id}?userSessionId=${userSessionId}`,
     body,
     tenantId,
   });

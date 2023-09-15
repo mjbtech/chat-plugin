@@ -93,10 +93,11 @@ export const Bot = (props: BotProps & { class?: string; onMax?: () => void; isMa
     let cookieUser = cookieVal ? JSON.parse(cookieVal) : null;
 
     if (cookieUser) {
-      const { data } = await getUserSession({ apiHost, tenantId, session_id: cookieUser.data?._id });
-      if (data?.data) {
-        setUserSession(data.data);
-      }
+      setUserSession(cookieUser);
+      // const { data } = await getUserSession({ apiHost, tenantId, session_id: cookieUser.data?._id });
+      // if (data?.data) {
+      //   setUserSession(data.data);
+      // }
     }
     setSessionLoading(false);
   });
@@ -107,11 +108,15 @@ export const Bot = (props: BotProps & { class?: string; onMax?: () => void; isMa
       createdAt: new Date(),
       meta_data: values,
     };
-    const user = await createUserSessionRequest({ apiHost: props.apiHost, tenantId: props.tenantId, body });
-    if (user?.data) {
-      setCookie("session_user", JSON.stringify(user.data), 30);
+    const { data: response } = await createUserSessionRequest({
+      apiHost: props.apiHost,
+      tenantId: props.tenantId,
+      body,
+    });
+    if (response?.data) {
+      setCookie("session_user", JSON.stringify(response.data), 30);
+      setUserSession(response.data);
     }
-    setUserSession(user);
   };
 
   onMount(() => {
@@ -225,6 +230,7 @@ export const Bot = (props: BotProps & { class?: string; onMax?: () => void; isMa
       apiHost: props.apiHost,
       tenantId: props.tenantId,
       session_id: socketIOClientId(),
+      userSessionId: userSession()?._id,
       topic_id: selectedTopic()._id,
       body: {
         question: value,
@@ -393,7 +399,15 @@ export const Bot = (props: BotProps & { class?: string; onMax?: () => void; isMa
           props.class
         }
       >
-        <Header {...props.header} gotoTopic={gotoTopic} onMax={props.onMax} isMax={props.isMax} />
+        <Header
+          avatar={props.header?.avatar}
+          backgroundColor={props.header?.avatar}
+          subTitle={props.header?.subTitle}
+          title={props.header?.title}
+          gotoTopic={gotoTopic}
+          onMax={props.onMax}
+          isMax={props.isMax}
+        />
         <div class="flex w-full h-full justify-center">
           <div
             style={{ "padding-bottom": "160px" }}
