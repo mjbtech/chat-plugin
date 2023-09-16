@@ -6,6 +6,7 @@ type Props = {
   avatar?: string;
   avatarStyle?: any;
   gotoTopic?: any;
+  isViewTopic?: boolean;
   isMax?: boolean;
   onMax?: () => void;
 };
@@ -36,9 +37,11 @@ export const Header = (props: Props) => {
           {props.subTitle ?? defaultSubTitle}
         </div>
       </div>
-      <div class="cursor-pointer" onclick={props.gotoTopic}>
-        View Menu
-      </div>
+      {props.isViewTopic ? (
+        <div class="cursor-pointer" onclick={props.gotoTopic}>
+          View Menu
+        </div>
+      ) : null}
       <div style={{ "margin-left": "10px", cursor: "pointer" }} class="hidden sm:block" on:click={props.onMax}>
         {props.isMax ? (
           <svg

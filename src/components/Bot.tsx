@@ -6,7 +6,6 @@ import {
   sendMessageQuery,
   tenantDBLoad,
   createUserSessionRequest,
-  getUserSession,
 } from "@/queries/sendMessageQuery";
 import socketIOClient from "socket.io-client";
 import { For, createEffect, createSignal, onMount } from "solid-js";
@@ -94,10 +93,6 @@ export const Bot = (props: BotProps & { class?: string; onMax?: () => void; isMa
 
     if (cookieUser) {
       setUserSession(cookieUser);
-      // const { data } = await getUserSession({ apiHost, tenantId, session_id: cookieUser.data?._id });
-      // if (data?.data) {
-      //   setUserSession(data.data);
-      // }
     }
     setSessionLoading(false);
   });
@@ -134,8 +129,10 @@ export const Bot = (props: BotProps & { class?: string; onMax?: () => void; isMa
 
   const fetchTopics = async () => {
     const { chatflowid, apiHost, tenantId } = props;
+    setLoading(true);
     const { data } = await getChatflow({ chatflowid, apiHost, tenantId });
-    if (data?.data?.chatbot_theme) setPoweredByVisibility(data?.data?.chatbot_theme?.powered_by_visibility);
+    if (typeof data?.data?.chatbot_theme?.powered_by_visibility === "boolean")
+      setPoweredByVisibility(data?.data?.chatbot_theme?.powered_by_visibility);
     setTopics(data.data.topics);
     if (data.data.topics.length === 1) {
       optionSelect(data.data.topics[0].name);
@@ -148,6 +145,7 @@ export const Bot = (props: BotProps & { class?: string; onMax?: () => void; isMa
         ];
       });
     }
+    setLoading(false);
     scrollToBottom();
   };
 
@@ -194,6 +192,14 @@ export const Bot = (props: BotProps & { class?: string; onMax?: () => void; isMa
     setUserInput(value);
 
     if (value.trim() === "") {
+      return;
+    }
+
+    if (!userSession()) {
+      setMessages((prevMessages) => [
+        ...prevMessages,
+        { message: "Please make sure to fill in all the required fields to complete the process.", type: "apiMessage" },
+      ]);
       return;
     }
 
@@ -363,6 +369,9 @@ export const Bot = (props: BotProps & { class?: string; onMax?: () => void; isMa
     const topic = topics().find((topic) => topic.name === option);
     if (topic) {
       setLoading(true);
+      setMessages((prev) => {
+        return [...prev, { message: option, type: "userMessage" }];
+      });
       scrollToBottom();
 
       await createChain({
@@ -377,11 +386,7 @@ export const Bot = (props: BotProps & { class?: string; onMax?: () => void; isMa
       setLoading(false);
       scrollToBottom();
       setMessages((prev) => {
-        return [
-          ...prev,
-          { message: option, type: "userMessage" },
-          { message: `Please post your query on : ${option}`, type: "apiMessage" },
-        ];
+        return [...prev, { message: `Please post your query on : ${option}`, type: "apiMessage" }];
       });
     }
   };
@@ -406,6 +411,7 @@ export const Bot = (props: BotProps & { class?: string; onMax?: () => void; isMa
           subTitle={props.header?.subTitle}
           title={props.header?.title}
           gotoTopic={gotoTopic}
+          isViewTopic={userSession()}
           onMax={props.onMax}
           isMax={props.isMax}
         />
@@ -453,9 +459,11 @@ export const Bot = (props: BotProps & { class?: string; onMax?: () => void; isMa
                     </div>
                   )}
 
-                  {message.type === "userMessage" && loading() && index() === messages().length - 1 && (
+                  {!topics().length ||
+                  (message.type === "userMessage" && loading() && index() === messages().length - 1) ? (
                     <LoadingBubble />
-                  )}
+                  ) : null}
+
                   {message.sourceDocuments && message.sourceDocuments.length && (
                     <div style={{ display: "flex", "flex-direction": "row", width: "100%" }}>
                       <For each={[...removeDuplicateURL(message)]}>

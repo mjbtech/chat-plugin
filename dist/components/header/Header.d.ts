@@ -6,6 +6,7 @@ type Props = {
     avatar?: string;
     avatarStyle?: any;
     gotoTopic?: any;
+    isViewTopic?: boolean;
     isMax?: boolean;
     onMax?: () => void;
 };
