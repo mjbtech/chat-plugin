@@ -459,7 +459,7 @@ export const Bot = (props: BotProps & { class?: string; onMax?: () => void; isMa
                     </div>
                   )}
 
-                  {!topics().length ||
+                  {(!topics().length && userSession()) ||
                   (message.type === "userMessage" && loading() && index() === messages().length - 1) ? (
                     <LoadingBubble />
                   ) : null}
