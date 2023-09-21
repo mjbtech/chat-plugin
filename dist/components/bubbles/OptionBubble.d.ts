@@ -2,6 +2,7 @@ type Props = {
     topic_name: string;
     onOptionClick?: () => void;
     backgroundColor?: string;
+    borderColor?: string;
     textColor?: string;
 };
 export declare const OptionBubble: (props: Props) => import("solid-js").JSX.Element;
