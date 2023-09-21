@@ -62,6 +62,8 @@ export const LoginPrompt = (props: Props) => {
                             <ShortTextInput
                               ref={inputRef as HTMLInputElement}
                               onInput={(value) => onChange(field.field_name, value)}
+                              type={field.field_name.toLowerCase() === "email" ? "email" : "text"}
+                              required={field.is_required}
                               // value={formData()?}
                               fontSize={16}
                               placeholder={`Type your ${field.field_name.toLowerCase()}`}

@@ -8,7 +8,7 @@ import {
   createUserSessionRequest,
 } from "@/queries/sendMessageQuery";
 import socketIOClient from "socket.io-client";
-import { For, createEffect, createSignal, onMount } from "solid-js";
+import { For, Show, createEffect, createSignal, onMount } from "solid-js";
 import { Badge } from "./Badge";
 import { BotBubble } from "./bubbles/BotBubble";
 import { GuestBubble } from "./bubbles/GuestBubble";
@@ -68,7 +68,7 @@ export const Bot = (props: BotProps & { class?: string; onMax?: () => void; isMa
   const [userInput, setUserInput] = createSignal("");
   const [loading, setLoading] = createSignal(false);
   const [sourcePopupOpen, setSourcePopupOpen] = createSignal(false);
-  const [sourcePopupSrc, setSourcePopupSrc] = createSignal({});
+  const [sourcePopupSrc, setSourcePopupSrc] = createSignal(null);
   const [topics, setTopics] = createSignal<any[]>([]);
   const [poweredByVisibility, setPoweredByVisibility] = createSignal(true);
   const [messages, setMessages] = createSignal<MessageType[]>(
@@ -396,8 +396,6 @@ export const Bot = (props: BotProps & { class?: string; onMax?: () => void; isMa
     await fetchTopics();
   };
 
-  console.log(cookieVal);
-
   return (
     <>
       <div
@@ -414,7 +412,7 @@ export const Bot = (props: BotProps & { class?: string; onMax?: () => void; isMa
           subTitle={props.header?.subTitle}
           title={props.header?.title}
           gotoTopic={gotoTopic}
-          isViewTopic={userSession()}
+          isViewTopic={selectedTopic() && Object.keys(selectedTopic()).length}
           onMax={props.onMax}
           isMax={props.isMax}
         />
@@ -507,7 +505,7 @@ export const Bot = (props: BotProps & { class?: string; onMax?: () => void; isMa
             ) : null}
           </div>
 
-          {cookieVal !== null || userSession() ? (
+          <Show when={selectedTopic() && Object.keys(selectedTopic()).length}>
             <TextInput
               backgroundColor={props.textInput?.backgroundColor}
               textColor={props.textInput?.textColor}
@@ -517,7 +515,7 @@ export const Bot = (props: BotProps & { class?: string; onMax?: () => void; isMa
               defaultValue={userInput()}
               onSubmit={handleSubmit}
             />
-          ) : null}
+          </Show>
         </div>
         <Badge
           badgeBackgroundColor={props.badgeBackgroundColor}
