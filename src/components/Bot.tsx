@@ -55,11 +55,12 @@ export type BotProps = {
   iconBackground?: string;
 };
 
-const defaultWelcomeMessage = "Hi there! How can I help?";
+const defaultWelcomeMessage = "Hello!, What can I assist you with today? 🌟";
 
-const selectOptionMessage = "Please choose an 👇 option to continue";
+const selectOptionMessage = "Take your pick! 🚀 Select an option below to keep things rolling.";
 
 export const Bot = (props: BotProps & { class?: string; onMax?: () => void; isMax?: boolean }) => {
+  const cookieVal = getCookie("session_user");
   let chatContainer: HTMLDivElement | undefined;
   let bottomSpacer: HTMLDivElement | undefined;
   let botContainer: HTMLDivElement | undefined;
@@ -73,7 +74,7 @@ export const Bot = (props: BotProps & { class?: string; onMax?: () => void; isMa
   const [messages, setMessages] = createSignal<MessageType[]>(
     [
       {
-        message: props.welcomeMessage ?? defaultWelcomeMessage,
+        message: cookieVal ? props.welcomeMessage ?? defaultWelcomeMessage : "Hello!",
         type: "apiMessage",
       },
     ],
@@ -88,7 +89,7 @@ export const Bot = (props: BotProps & { class?: string; onMax?: () => void; isMa
   createEffect(async () => {
     const { chatflowid, apiHost, tenantId } = props;
     await tenantDBLoad({ chatflowid, apiHost, tenantId });
-    const cookieVal = getCookie("session_user");
+
     let cookieUser = cookieVal ? JSON.parse(cookieVal) : null;
 
     if (cookieUser) {
@@ -395,6 +396,8 @@ export const Bot = (props: BotProps & { class?: string; onMax?: () => void; isMa
     await fetchTopics();
   };
 
+  console.log(cookieVal);
+
   return (
     <>
       <div
@@ -450,8 +453,9 @@ export const Bot = (props: BotProps & { class?: string; onMax?: () => void; isMa
                         {(option) => (
                           <OptionBubble
                             topic_name={option}
-                            backgroundColor={props.botMessage?.backgroundColor}
-                            textColor={props.botMessage?.textColor}
+                            backgroundColor={props.header?.backgroundColor}
+                            textColor={props.header?.textColor}
+                            borderColor={props.header?.backgroundColor}
                             onOptionClick={() => optionSelect(option)}
                           />
                         )}
@@ -490,22 +494,30 @@ export const Bot = (props: BotProps & { class?: string; onMax?: () => void; isMa
                 </>
               )}
             </For>
+
             {!userSession() && !sessionLoading() ? (
               <LoginPrompt
                 formFields={props?.loginPrompt ?? [{ field_name: "Email", is_required: true }]}
                 onSubmit={createUserSession}
+                backgroundColor={props.botMessage?.backgroundColor}
+                textColor={props.botMessage?.textColor}
+                submitButtonBackground={props.header?.backgroundColor}
+                submitButtonTextColor={props.header?.textColor}
               />
             ) : null}
           </div>
-          <TextInput
-            backgroundColor={props.textInput?.backgroundColor}
-            textColor={props.textInput?.textColor}
-            placeholder={props.textInput?.placeholder}
-            sendButtonColor={props.textInput?.sendButtonColor}
-            fontSize={props.fontSize}
-            defaultValue={userInput()}
-            onSubmit={handleSubmit}
-          />
+
+          {cookieVal !== null || userSession() ? (
+            <TextInput
+              backgroundColor={props.textInput?.backgroundColor}
+              textColor={props.textInput?.textColor}
+              placeholder={props.textInput?.placeholder}
+              sendButtonColor={props.textInput?.sendButtonColor}
+              fontSize={props.fontSize}
+              defaultValue={userInput()}
+              onSubmit={handleSubmit}
+            />
+          ) : null}
         </div>
         <Badge
           badgeBackgroundColor={props.badgeBackgroundColor}

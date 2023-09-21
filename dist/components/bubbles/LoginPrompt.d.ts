@@ -3,7 +3,10 @@ type Props = {
         field_name: string;
         is_required: boolean;
     }[];
+    backgroundColor?: string;
+    textColor?: string;
     submitButtonBackground?: string;
+    submitButtonTextColor?: string;
     submitIcon?: Node;
     iconBackground?: string;
     onSubmit: any;
