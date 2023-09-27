@@ -21,6 +21,20 @@ export const TextInput = (props: Props) => {
   const [micStart, setMicStart] = createSignal(false);
   const [micVisibility, setMicVisibility] = createSignal(false);
 
+  const grammar =
+    "#JSGF V1.0; grammar colors; public <color> = aqua | azure | beige | bisque | black | blue | brown | chocolate | coral | crimson | cyan | fuchsia | ghostwhite | gold | goldenrod | gray | green | indigo | ivory | khaki | lavender | lime | linen | magenta | maroon | moccasin | navy | olive | orange | orchid | peru | pink | plum | purple | red | salmon | sienna | silver | snow | tan | teal | thistle | tomato | turquoise | violet | white | yellow ;";
+  // @ts-ignore
+  const recognition = new window.webkitSpeechRecognition();
+
+  // @ts-ignore
+  if (window?.webkitSpeechGrammarList) {
+    // @ts-ignore
+    var speechRecognitionList = new window.webkitSpeechGrammarList();
+
+    speechRecognitionList.addFromString(grammar, 1);
+    recognition.grammars = speechRecognitionList;
+  }
+
   let inputRef: HTMLInputElement | HTMLTextAreaElement | undefined;
 
   const handleInput = (inputValue: string) => setInputValue(inputValue);
@@ -50,38 +64,36 @@ export const TextInput = (props: Props) => {
   });
 
   const onMicStart = () => {
-    const grammar =
-      "#JSGF V1.0; grammar colors; public <color> = aqua | azure | beige | bisque | black | blue | brown | chocolate | coral | crimson | cyan | fuchsia | ghostwhite | gold | goldenrod | gray | green | indigo | ivory | khaki | lavender | lime | linen | magenta | maroon | moccasin | navy | olive | orange | orchid | peru | pink | plum | purple | red | salmon | sienna | silver | snow | tan | teal | thistle | tomato | turquoise | violet | white | yellow ;";
+    if (micStart()) {
+      recognition.stop();
+      setMicStart(false);
+    } else {
+      recognition.start();
+    }
     // @ts-ignore
-    const recognition = new window.webkitSpeechRecognition();
-    // @ts-ignore
-    var speechRecognitionList = new (window.SpeechGrammarList ||
-      // @ts-ignore
-      window.webkitSpeechGrammarList ||
-      // @ts-ignore
-      window.mozSpeechGrammarList ||
-      // @ts-ignore
-      window.msSpeechGrammarList)();
-
-    speechRecognitionList.addFromString(grammar, 1);
-    recognition.grammars = speechRecognitionList;
     recognition.continuous = false;
     recognition.lang = "en-US";
     recognition.interimResults = false;
     recognition.maxAlternatives = 1;
-    recognition.start();
     recognition.onresult = function (event: any) {
       setInputValue(event.results[0][0].transcript);
     };
 
     recognition.onaudiostart = function () {
-      console.log("Audio Start");
       setMicStart(true);
     };
 
     recognition.onaudioend = function () {
       console.log("Audio End");
       setMicStart(false);
+    };
+
+    recognition.onspeechstart = function () {
+      console.log("Speech Start");
+    };
+
+    recognition.onspeechend = function () {
+      console.log("Speech End");
     };
   };
 
