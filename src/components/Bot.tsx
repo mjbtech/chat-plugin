@@ -414,6 +414,7 @@ export const Bot = (props: BotProps & { class?: string; onMax?: () => void; isMa
         "Take your pick! 🚀 Select an option below to keep things rolling.",
         defaultWelcomeMessage,
         selectOptionMessage,
+        props.welcomeMessage,
       ].includes(message) || message.startsWith("Please post your query on")
     );
   };
