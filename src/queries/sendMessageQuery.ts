@@ -45,6 +45,18 @@ export type UserSessionRequest = {
   body?: any;
 };
 
+export type ReviewRequest = {
+  apiHost?: string;
+  tenantId?: string;
+  chatflow_id: string;
+  topic_id?: string;
+  user_email?: string;
+  question?: string;
+  answer?: string;
+  feedback?: string;
+  rating?: number;
+};
+
 export const initiateTopic = async ({ apiHost = "http://localhost:3000", body }: MessageRequest) => {
   await sendRequest<any>({
     method: "POST",
@@ -126,5 +138,14 @@ export const createChain = ({
     method: "POST",
     url: `${apiHost}/api/v1/chatflow/${chatflowid}/create-chain/topic/${topic_id}/session/${session_id}`,
     tenantId,
+  });
+};
+
+export const postReview = async ({ apiHost = "http://localhost:3000", tenantId, ...rest }: ReviewRequest) => {
+  return await sendRequest<any>({
+    method: "POST",
+    url: `${apiHost}/api/v1/review`,
+    tenantId,
+    body: rest,
   });
 };

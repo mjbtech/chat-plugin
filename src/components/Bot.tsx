@@ -1,24 +1,27 @@
 import { BotMessageTheme, TextInputTheme, UserMessageTheme } from "@/features/bubble/types";
 import { Popup } from "@/features/popup";
 import {
+  ReviewRequest,
   createChain,
+  createUserSessionRequest,
   getChatflow,
+  postReview,
   sendMessageQuery,
   tenantDBLoad,
-  createUserSessionRequest,
 } from "@/queries/sendMessageQuery";
 import socketIOClient from "socket.io-client";
 import { For, Show, createEffect, createSignal, onMount } from "solid-js";
+import { getCookie, setCookie } from "../utils/cookieUtil";
 import { Badge } from "./Badge";
 import { BotBubble } from "./bubbles/BotBubble";
 import { GuestBubble } from "./bubbles/GuestBubble";
 import { LoadingBubble } from "./bubbles/LoadingBubble";
 import { LoginPrompt } from "./bubbles/LoginPrompt";
 import { OptionBubble } from "./bubbles/OptionBubble";
+import { RatingBubble } from "./bubbles/RatingBubble";
 import { SourceBubble } from "./bubbles/SourceBubble";
 import { Header } from "./header/Header";
 import { TextInput } from "./inputs/textInput";
-import { getCookie, setCookie } from "../utils/cookieUtil";
 
 type messageType = "apiMessage" | "userMessage" | "usermessagewaiting" | "option";
 
@@ -85,6 +88,7 @@ export const Bot = (props: BotProps & { class?: string; onMax?: () => void; isMa
   const [selectedTopic, setSelectedTopic] = createSignal<any>({});
   const [userSession, setUserSession] = createSignal<any>(null);
   const [sessionLoading, setSessionLoading] = createSignal<boolean>(true);
+  const [endChat, setEndChat] = createSignal(false);
 
   createEffect(async () => {
     const { chatflowid, apiHost, tenantId } = props;
@@ -300,7 +304,12 @@ export const Bot = (props: BotProps & { class?: string; onMax?: () => void; isMa
       });
 
       socket.on("startChat", () => {
+        setEndChat(false);
         setMessages((prevMessages) => [...prevMessages, { message: "", type: "apiMessage" }]);
+      });
+
+      socket.on("endChat", () => {
+        setEndChat(true);
       });
 
       socket.on("sourceDocuments", updateLastMessageSourceDocuments);
@@ -396,6 +405,35 @@ export const Bot = (props: BotProps & { class?: string; onMax?: () => void; isMa
     await fetchTopics();
   };
 
+  const excludeRating = (message: string) => {
+    return (
+      [
+        "Hello!",
+        "Hello!,",
+        "Hello!, What can I assist you with today?",
+        "Take your pick! 🚀 Select an option below to keep things rolling.",
+        defaultWelcomeMessage,
+        selectOptionMessage,
+      ].includes(message) || message.startsWith("Please post your query on")
+    );
+  };
+
+  const onPostReview = (rating: number, feedback: string, index: number) => {
+    let payload = {
+      rating,
+      feedback,
+      apiHost: props.apiHost,
+      chatflow_id: props.chatflowid,
+      topic_id: selectedTopic()._id,
+      question: messages()[index - 1].message,
+      answer: messages()[index].message,
+      tenantId: props.tenantId,
+      user_email: userSession().email,
+    };
+
+    postReview(payload);
+  };
+
   return (
     <>
       <div
@@ -436,13 +474,27 @@ export const Bot = (props: BotProps & { class?: string; onMax?: () => void; isMa
                   )}
 
                   {message.type === "apiMessage" && (
-                    <BotBubble
-                      message={message.message}
-                      backgroundColor={props.botMessage?.backgroundColor}
-                      textColor={props.botMessage?.textColor}
-                      showAvatar={props.botMessage?.showAvatar}
-                      avatarSrc={props.botMessage?.avatarSrc}
-                    />
+                    <>
+                      <BotBubble
+                        message={message.message}
+                        backgroundColor={props.botMessage?.backgroundColor}
+                        textColor={props.botMessage?.textColor}
+                        showAvatar={props.botMessage?.showAvatar}
+                        avatarSrc={props.botMessage?.avatarSrc}
+                      />
+                      {!excludeRating(message.message) && message.message.length ? (
+                        <RatingBubble
+                          backgroundColor={props.header?.backgroundColor ?? "#3b81f6"}
+                          textColor={props.header?.textColor ?? "#fff"}
+                          onSubmitReview={({ rating, feedback }) => {
+                            onPostReview(rating, feedback, index());
+                          }}
+                          messageIndex={index()}
+                        />
+                      ) : (
+                        <div class="mb-4 mt-1" />
+                      )}
+                    </>
                   )}
 
                   {message.type === "option" && (

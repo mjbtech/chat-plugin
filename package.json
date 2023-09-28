@@ -18,7 +18,8 @@
     "lodash": "^4.17.21",
     "socket.io-client": "^4.6.2",
     "solid-element": "1.7.0",
-    "solid-js": "1.7.1"
+    "solid-js": "1.7.1",
+    "solid-transition-group": "^0.2.3"
   },
   "devDependencies": {
     "@babel/preset-typescript": "7.21.4",

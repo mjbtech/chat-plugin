@@ -37,6 +37,17 @@ export type UserSessionRequest = {
     session_id?: string;
     body?: any;
 };
+export type ReviewRequest = {
+    apiHost?: string;
+    tenantId?: string;
+    chatflow_id: string;
+    topic_id?: string;
+    user_email?: string;
+    question?: string;
+    answer?: string;
+    feedback?: string;
+    rating?: number;
+};
 export declare const initiateTopic: ({ apiHost, body }: MessageRequest) => Promise<void>;
 export declare const sendMessageQuery: ({ apiHost, tenantId, chatflowid, topic_id, session_id, body, userSessionId, }: PredictRequest) => Promise<{
     data?: any;
@@ -67,6 +78,10 @@ export declare const getUserSession: ({ apiHost, tenantId, session_id }: UserSes
     error?: Error | undefined;
 }>;
 export declare const createChain: ({ chatflowid, apiHost, topic_id, session_id, tenantId, }: ChainRequest) => Promise<{
+    data?: any;
+    error?: Error | undefined;
+}>;
+export declare const postReview: ({ apiHost, tenantId, ...rest }: ReviewRequest) => Promise<{
     data?: any;
     error?: Error | undefined;
 }>;
