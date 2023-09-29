@@ -10,7 +10,7 @@ type RatingProps = {
 };
 
 export const RatingBubble = (props: RatingProps) => {
-  const [selectedRating, setSelectedRating] = createSignal(4);
+  const [selectedRating, setSelectedRating] = createSignal(0);
   const [openFeedback, setOpenFeedback] = createSignal(false);
   const [postedFeedback, setPostedFeedback] = createSignal<number[]>([]);
   const [feedback, setFeedback] = createSignal<string>("");
@@ -31,7 +31,7 @@ export const RatingBubble = (props: RatingProps) => {
   };
 
   onCleanup(() => {
-    setSelectedRating(4);
+    setSelectedRating(0);
     setOpenFeedback(false);
   });
 
