@@ -44,3 +44,29 @@ export const sendRequest = async <ResponseData>(
     return { error: e as Error };
   }
 };
+
+export const sendMultipartRequest = async <ResponseData>(params: {
+  url: string;
+  method: string;
+  body?: FormData;
+  tenantId?: string;
+}): Promise<{ data?: ResponseData; error?: Error }> => {
+  try {
+    const url = params.url;
+    const response = await fetch(url, {
+      method: params.method,
+      // mode: 'cors',
+      headers: {
+        // "Content-Type": "multipart/form-data",
+        "x-tenant-code": typeof params !== "string" ? params?.tenantId ?? "" : "",
+      },
+      body: params.body ?? undefined,
+    });
+    const data = await response.json();
+    if (!response.ok) throw "error" in data ? data.error : data;
+    return { data };
+  } catch (e) {
+    console.error(e);
+    return { error: e as Error };
+  }
+};

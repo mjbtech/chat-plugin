@@ -414,3 +414,16 @@ input {
   padding: 10px 10px;
   font-family: "Poppins", sans-serif;
 }
+
+.pulse {
+  animation: pulse-animation 1.5s infinite;
+}
+
+@keyframes pulse-animation {
+  0% {
+    box-shadow: 0 0 0 0px rgba(59, 129, 246, 0.2);
+  }
+  100% {
+    box-shadow: 0 0 0 60px rgba(59, 129, 246, 0);
+  }
+}

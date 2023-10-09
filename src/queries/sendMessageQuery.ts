@@ -1,5 +1,5 @@
 import { MessageType } from "@/components/Bot";
-import { sendRequest } from "@/utils/index";
+import { sendMultipartRequest, sendRequest } from "@/utils/index";
 
 export type IncomingInput = {
   question: string;
@@ -55,6 +55,12 @@ export type ReviewRequest = {
   answer?: string;
   feedback?: string;
   rating?: number;
+};
+
+export type SpeechRecognitionRequest = {
+  apiHost?: string;
+  tenantId?: string;
+  body?: FormData;
 };
 
 export const initiateTopic = async ({ apiHost = "http://localhost:3000", body }: MessageRequest) => {
@@ -147,5 +153,18 @@ export const postReview = async ({ apiHost = "http://localhost:3000", tenantId, 
     url: `${apiHost}/api/v1/review`,
     tenantId,
     body: rest,
+  });
+};
+
+export const speechRecognition = async ({
+  apiHost = "http://localhost:3000",
+  tenantId,
+  body,
+}: SpeechRecognitionRequest) => {
+  return await sendMultipartRequest<any>({
+    method: "POST",
+    url: `${apiHost}/api/v1/common/speech-recognize`,
+    body: body,
+    tenantId,
   });
 };

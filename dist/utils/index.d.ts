@@ -11,4 +11,13 @@ export declare const sendRequest: <ResponseData>(params: {
     data?: ResponseData | undefined;
     error?: Error | undefined;
 }>;
+export declare const sendMultipartRequest: <ResponseData>(params: {
+    url: string;
+    method: string;
+    body?: FormData;
+    tenantId?: string;
+}) => Promise<{
+    data?: ResponseData | undefined;
+    error?: Error | undefined;
+}>;
 //# sourceMappingURL=index.d.ts.map
