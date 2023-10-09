@@ -567,6 +567,12 @@ export const Bot = (props: BotProps & { class?: string; onMax?: () => void; isMa
               fontSize={props.fontSize}
               defaultValue={userInput()}
               onSubmit={handleSubmit}
+              apiHost={props.apiHost}
+              tenantId={props.tenantId}
+              buttonTheme={{
+                backgroundColor: props.header?.backgroundColor ?? "#3b81f6",
+                textColor: props.header?.textColor ?? "#fff",
+              }}
             />
           </Show>
         </div>

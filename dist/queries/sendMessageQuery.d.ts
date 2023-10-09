@@ -48,6 +48,11 @@ export type ReviewRequest = {
     feedback?: string;
     rating?: number;
 };
+export type SpeechRecognitionRequest = {
+    apiHost?: string;
+    tenantId?: string;
+    body?: FormData;
+};
 export declare const initiateTopic: ({ apiHost, body }: MessageRequest) => Promise<void>;
 export declare const sendMessageQuery: ({ apiHost, tenantId, chatflowid, topic_id, session_id, body, userSessionId, }: PredictRequest) => Promise<{
     data?: any;
@@ -82,6 +87,10 @@ export declare const createChain: ({ chatflowid, apiHost, topic_id, session_id, 
     error?: Error | undefined;
 }>;
 export declare const postReview: ({ apiHost, tenantId, ...rest }: ReviewRequest) => Promise<{
+    data?: any;
+    error?: Error | undefined;
+}>;
+export declare const speechRecognition: ({ apiHost, tenantId, body, }: SpeechRecognitionRequest) => Promise<{
     data?: any;
     error?: Error | undefined;
 }>;
