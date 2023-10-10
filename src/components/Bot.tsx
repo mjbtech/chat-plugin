@@ -89,6 +89,7 @@ export const Bot = (props: BotProps & { class?: string; onMax?: () => void; isMa
   const [userSession, setUserSession] = createSignal<any>(null);
   const [sessionLoading, setSessionLoading] = createSignal<boolean>(true);
   const [endChat, setEndChat] = createSignal(false);
+  const [chain, setChain] = createSignal(false);
 
   createEffect(async () => {
     const { chatflowid, apiHost, tenantId } = props;
@@ -192,6 +193,25 @@ export const Bot = (props: BotProps & { class?: string; onMax?: () => void; isMa
     scrollToBottom();
   };
 
+  createEffect(async () => {
+    console.log("Create Chain");
+    if (!chain() && userSession()) {
+      console.log("--------Creating Chain");
+      try {
+        await createChain({
+          tenantId: props.tenantId,
+          chatflowid: props.chatflowid,
+          apiHost: props.apiHost,
+          // topic_id: topic._id,
+          session_id: socketIOClientId(),
+        });
+        setChain(true);
+      } catch (error) {
+        setChain(false);
+      }
+    }
+  }, [userSession()]);
+
   // Handle form submission
   const handleSubmit = async (value: string) => {
     setUserInput(value);
@@ -208,13 +228,13 @@ export const Bot = (props: BotProps & { class?: string; onMax?: () => void; isMa
       return;
     }
 
-    if (!Object.keys(selectedTopic()).length) {
-      setMessages((prevMessages) => [
-        ...prevMessages,
-        { message: "Please choose an option to continue", type: "apiMessage" },
-      ]);
-      return;
-    }
+    // if (!Object.keys(selectedTopic()).length) {
+    //   setMessages((prevMessages) => [
+    //     ...prevMessages,
+    //     { message: "Please choose an option to continue", type: "apiMessage" },
+    //   ]);
+    //   return;
+    // }
 
     setLoading(true);
     scrollToBottom();
@@ -242,14 +262,14 @@ export const Bot = (props: BotProps & { class?: string; onMax?: () => void; isMa
       tenantId: props.tenantId,
       session_id: socketIOClientId(),
       userSessionId: userSession()?._id,
-      topic_id: selectedTopic()._id,
+      topic_id: selectedTopic()?._id,
       body: {
         question: value,
       },
     });
 
     if (result.data) {
-      const data = handleVectaraMetadata(result.data);
+      const data = handleVectorMetadata(result.data);
 
       if (typeof data === "object" && data.text && data.sourceDocuments) {
         if (!isChatFlowAvailableToStream()) {
@@ -342,7 +362,7 @@ export const Bot = (props: BotProps & { class?: string; onMax?: () => void; isMa
     }
   };
 
-  const handleVectaraMetadata = (message: any): any => {
+  const handleVectorMetadata = (message: any): any => {
     if (message.sourceDocuments && message.sourceDocuments[0].metadata.length) {
       message.sourceDocuments = message.sourceDocuments.map((docs: any) => {
         const newMetadata: { [name: string]: any } = docs.metadata.reduce((newMetadata: any, metadata: any) => {
@@ -362,7 +382,7 @@ export const Bot = (props: BotProps & { class?: string; onMax?: () => void; isMa
     const visitedURLs: string[] = [];
     const newSourceDocuments: any = [];
 
-    message = handleVectaraMetadata(message);
+    message = handleVectorMetadata(message);
 
     message.sourceDocuments.forEach((source: any) => {
       if (isValidURL(source.metadata.source) && !visitedURLs.includes(source.metadata.source)) {
@@ -384,13 +404,13 @@ export const Bot = (props: BotProps & { class?: string; onMax?: () => void; isMa
       });
       scrollToBottom();
 
-      await createChain({
-        tenantId: props.tenantId,
-        chatflowid: props.chatflowid,
-        apiHost: props.apiHost,
-        topic_id: topic._id,
-        session_id: socketIOClientId(),
-      });
+      // await createChain({
+      //   tenantId: props.tenantId,
+      //   chatflowid: props.chatflowid,
+      //   apiHost: props.apiHost,
+      //   topic_id: topic._id,
+      //   session_id: socketIOClientId(),
+      // });
 
       setSelectedTopic(topic);
       setLoading(false);
@@ -434,6 +454,8 @@ export const Bot = (props: BotProps & { class?: string; onMax?: () => void; isMa
 
     postReview(payload);
   };
+
+  console.log(chain(), "Chain");
 
   return (
     <>
@@ -557,8 +579,7 @@ export const Bot = (props: BotProps & { class?: string; onMax?: () => void; isMa
               />
             ) : null}
           </div>
-
-          <Show when={selectedTopic() && Object.keys(selectedTopic()).length}>
+          <Show when={chain() && userSession()}>
             <TextInput
               backgroundColor={props.textInput?.backgroundColor}
               textColor={props.textInput?.textColor}
