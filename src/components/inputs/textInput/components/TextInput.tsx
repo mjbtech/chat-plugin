@@ -76,18 +76,24 @@ export const TextInput = (props: Props) => {
   });
 
   const onMicStart = async () => {
-    if (!micStart()) {
+    try {
+      // if (!micStart()) {
       setMicStart(true);
       setShowModal(true);
       await recorder.startRecording();
-    } else {
-      setMicStart(false);
-      setTranscribe(true);
-      recorder.stopRecording((response) => {
-        setTranscribe(false);
-        setShowModal(false);
-        setInputValue(response);
-      });
+      // } else {
+      // setMicStart(false);
+      // setTranscribe(true);
+      // recorder.stopRecording((response) => {
+      //   setTranscribe(false);
+      //   setShowModal(false);
+      //   setInputValue(response);
+      // });
+      // }
+    } catch (error) {
+      setTranscribe(false);
+      setShowModal(false);
+      alert("Please enable microphone recording");
     }
     // if (micStart()) {
     //   recognition.stop();
@@ -116,6 +122,16 @@ export const TextInput = (props: Props) => {
     // recognition.onspeechend = function () {
     //   console.log("Speech End");
     // };
+  };
+
+  const stopRecording = () => {
+    setMicStart(false);
+    setTranscribe(true);
+    recorder.stopRecording((response) => {
+      setTranscribe(false);
+      setShowModal(false);
+      setInputValue(response);
+    });
   };
 
   return (
@@ -220,7 +236,7 @@ export const TextInput = (props: Props) => {
                 ) : (
                   <button
                     class="bg-red-500 text-white p-2 rounded-md hover:bg-red-600 active:bg-red-700 w-full"
-                    onClick={onMicStart}
+                    onClick={stopRecording}
                   >
                     Stop Recording
                   </button>
