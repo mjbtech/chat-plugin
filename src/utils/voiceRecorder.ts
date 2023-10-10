@@ -107,8 +107,10 @@ export default class Recorder {
       tenantId: this.tenantId,
       body: formData,
     });
-    const transcription = response.results.map((result: any) => result.alternatives[0].transcript).join("\n");
-    return transcription;
+    // const transcription = response.results
+    //   .map((result: any) => (result.alternatives.length ? result.alternatives[0].transcript : ""))
+    //   .join("\n");
+    return response ?? "";
   }
 
   public visualizeSound = (audioValueCallback: (value: number) => void) => {
