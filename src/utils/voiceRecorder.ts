@@ -78,9 +78,8 @@ export default class Recorder {
       await this.recorder.stopRecording();
       const blob = await this.recorder.getBlob();
       const response = await this.transcribe(blob);
-      if (response) {
-        onFinish(response);
-      }
+      onFinish(response ?? "");
+
       this.stream?.getTracks().forEach((track) => {
         track.stop();
       });
@@ -91,6 +90,7 @@ export default class Recorder {
       this.isPaused = false;
       this.isVisualize = false;
     } catch (error: any) {
+      onFinish("");
       this.isRecording = false;
       this.isStopped = true;
       throw new Error(`Error stopping recording: ${error.message}`);
