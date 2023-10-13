@@ -79,8 +79,8 @@ export const TextInput = (props: Props) => {
     try {
       // if (!micStart()) {
       setMicStart(true);
-      setShowModal(true);
       await recorder.startRecording();
+      setTimeout(() => setShowModal(true), 500);
       // } else {
       // setMicStart(false);
       // setTranscribe(true);
@@ -94,6 +94,9 @@ export const TextInput = (props: Props) => {
       setTranscribe(false);
       setShowModal(false);
       alert("Please enable microphone recording");
+    } finally {
+      setTranscribe(false);
+      setShowModal(false);
     }
     // if (micStart()) {
     //   recognition.stop();
