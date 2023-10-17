@@ -90,6 +90,7 @@ export const Bot = (props: BotProps & { class?: string; onMax?: () => void; isMa
   const [sessionLoading, setSessionLoading] = createSignal<boolean>(true);
   const [endChat, setEndChat] = createSignal(false);
   const [chain, setChain] = createSignal(false);
+  const [chainType, setChainType] = createSignal("");
 
   createEffect(async () => {
     const { chatflowid, apiHost, tenantId } = props;
@@ -139,17 +140,23 @@ export const Bot = (props: BotProps & { class?: string; onMax?: () => void; isMa
     const { data } = await getChatflow({ chatflowid, apiHost, tenantId });
     if (typeof data?.data?.chatbot_theme?.powered_by_visibility === "boolean")
       setPoweredByVisibility(data?.data?.chatbot_theme?.powered_by_visibility);
-    setTopics(data.data.topics);
-    if (data.data.topics.length === 1) {
-      optionSelect(data.data.topics[0].name);
-    } else {
-      setMessages((prev) => {
-        return [
-          ...prev,
-          { message: selectOptionMessage, type: "apiMessage" },
-          { message: data.data.topics.map((topic: any) => topic.name).join(","), type: "option" },
-        ];
-      });
+    if (data?.data?.type) {
+      setChainType(data.data.type);
+    }
+
+    if (data?.data?.type !== "gpt_plus") {
+      setTopics(data.data.topics);
+      if (data.data.topics.length === 1) {
+        optionSelect(data.data.topics[0].name);
+      } else {
+        setMessages((prev) => {
+          return [
+            ...prev,
+            { message: selectOptionMessage, type: "apiMessage" },
+            { message: data.data.topics.map((topic: any) => topic.name).join(","), type: "option" },
+          ];
+        });
+      }
     }
     setLoading(false);
     scrollToBottom();
@@ -194,15 +201,14 @@ export const Bot = (props: BotProps & { class?: string; onMax?: () => void; isMa
   };
 
   createEffect(async () => {
-    console.log("Create Chain");
-    if (!chain() && userSession()) {
-      console.log("--------Creating Chain");
+    if (!chain() && userSession() && chainType().length) {
+      console.log("--------Creating Chain---------");
       try {
         await createChain({
           tenantId: props.tenantId,
           chatflowid: props.chatflowid,
           apiHost: props.apiHost,
-          // topic_id: topic._id,
+          topic_id: chainType(),
           session_id: socketIOClientId(),
         });
         setChain(true);
@@ -210,7 +216,7 @@ export const Bot = (props: BotProps & { class?: string; onMax?: () => void; isMa
         setChain(false);
       }
     }
-  }, [userSession()]);
+  }, [userSession(), chainType()]);
 
   // Handle form submission
   const handleSubmit = async (value: string) => {
@@ -262,7 +268,7 @@ export const Bot = (props: BotProps & { class?: string; onMax?: () => void; isMa
       tenantId: props.tenantId,
       session_id: socketIOClientId(),
       userSessionId: userSession()?._id,
-      topic_id: selectedTopic()?._id,
+      topic_id: chainType(),
       body: {
         question: value,
       },
@@ -536,7 +542,7 @@ export const Bot = (props: BotProps & { class?: string; onMax?: () => void; isMa
                     </div>
                   )}
 
-                  {(!topics().length && userSession()) ||
+                  {(!topics().length && chainType() !== "gpt_plus" && userSession()) ||
                   (message.type === "userMessage" && loading() && index() === messages().length - 1) ? (
                     <LoadingBubble />
                   ) : null}
