@@ -91,6 +91,7 @@ export const Bot = (props: BotProps & { class?: string; onMax?: () => void; isMa
   const [endChat, setEndChat] = createSignal(false);
   const [chain, setChain] = createSignal(false);
   const [chainType, setChainType] = createSignal("");
+  const [noTopic, setNoTopic] = createSignal(false);
 
   createEffect(async () => {
     const { chatflowid, apiHost, tenantId } = props;
@@ -145,6 +146,10 @@ export const Bot = (props: BotProps & { class?: string; onMax?: () => void; isMa
     }
 
     if (data?.data?.type !== "gpt_plus") {
+      if (!data.data.topics.length) {
+        setNoTopic(true);
+        return;
+      }
       setTopics(data.data.topics);
       if (data.data.topics.length === 1) {
         optionSelect(data.data.topics[0].name);
@@ -489,90 +494,94 @@ export const Bot = (props: BotProps & { class?: string; onMax?: () => void; isMa
             ref={chatContainer}
             class="overflow-y-scroll min-w-full w-full min-h-full px-3 pt-10 relative scrollable-container chatbot-chat-view scroll-smooth"
           >
-            <For each={[...messages()]}>
-              {(message, index) => (
-                <>
-                  {message.type === "userMessage" && (
-                    <GuestBubble
-                      message={message.message}
-                      backgroundColor={props.userMessage?.backgroundColor}
-                      textColor={props.userMessage?.textColor}
-                      showAvatar={props.userMessage?.showAvatar}
-                      avatarSrc={props.userMessage?.avatarSrc}
-                    />
-                  )}
-
-                  {message.type === "apiMessage" && (
-                    <>
-                      <BotBubble
+            {!noTopic() ? (
+              <For each={[...messages()]}>
+                {(message, index) => (
+                  <>
+                    {message.type === "userMessage" && (
+                      <GuestBubble
                         message={message.message}
-                        backgroundColor={props.botMessage?.backgroundColor}
-                        textColor={props.botMessage?.textColor}
-                        showAvatar={props.botMessage?.showAvatar}
-                        avatarSrc={props.botMessage?.avatarSrc}
+                        backgroundColor={props.userMessage?.backgroundColor}
+                        textColor={props.userMessage?.textColor}
+                        showAvatar={props.userMessage?.showAvatar}
+                        avatarSrc={props.userMessage?.avatarSrc}
                       />
-                      {!excludeRating(message.message) && message.message.length ? (
-                        <RatingBubble
-                          backgroundColor={props.header?.backgroundColor ?? "#3b81f6"}
-                          textColor={props.header?.textColor ?? "#fff"}
-                          onSubmitReview={({ rating, feedback }) => {
-                            onPostReview(rating, feedback, index());
-                          }}
-                          messageIndex={index()}
+                    )}
+
+                    {message.type === "apiMessage" && (
+                      <>
+                        <BotBubble
+                          message={message.message}
+                          backgroundColor={props.botMessage?.backgroundColor}
+                          textColor={props.botMessage?.textColor}
+                          showAvatar={props.botMessage?.showAvatar}
+                          avatarSrc={props.botMessage?.avatarSrc}
                         />
-                      ) : (
-                        <div class="mb-4 mt-1" />
-                      )}
-                    </>
-                  )}
-
-                  {message.type === "option" && (
-                    <div class="flex flex-wrap  gap-2 mt-5 mb-3">
-                      <For each={[...message.message.split(",")]}>
-                        {(option) => (
-                          <OptionBubble
-                            topic_name={option}
-                            backgroundColor={props.header?.backgroundColor}
-                            textColor={props.header?.textColor}
-                            borderColor={props.header?.backgroundColor}
-                            onOptionClick={() => optionSelect(option)}
+                        {!excludeRating(message.message) && message.message.length ? (
+                          <RatingBubble
+                            backgroundColor={props.header?.backgroundColor ?? "#3b81f6"}
+                            textColor={props.header?.textColor ?? "#fff"}
+                            onSubmitReview={({ rating, feedback }) => {
+                              onPostReview(rating, feedback, index());
+                            }}
+                            messageIndex={index()}
                           />
+                        ) : (
+                          <div class="mb-4 mt-1" />
                         )}
-                      </For>
-                    </div>
-                  )}
+                      </>
+                    )}
 
-                  {(!topics().length && chainType() !== "gpt_plus" && userSession()) ||
-                  (message.type === "userMessage" && loading() && index() === messages().length - 1) ? (
-                    <LoadingBubble />
-                  ) : null}
-
-                  {message.sourceDocuments && message.sourceDocuments.length && (
-                    <div style={{ display: "flex", "flex-direction": "row", width: "100%" }}>
-                      <For each={[...removeDuplicateURL(message)]}>
-                        {(src) => {
-                          const URL = isValidURL(src.metadata.source);
-                          return (
-                            <SourceBubble
-                              pageContent={URL ? URL.pathname : src.pageContent}
-                              metadata={src.metadata}
-                              onSourceClick={() => {
-                                if (URL) {
-                                  window.open(src.metadata.source, "_blank");
-                                } else {
-                                  setSourcePopupSrc(src);
-                                  setSourcePopupOpen(true);
-                                }
-                              }}
+                    {message.type === "option" && (
+                      <div class="flex flex-wrap  gap-2 mt-5 mb-3">
+                        <For each={[...message.message.split(",")]}>
+                          {(option) => (
+                            <OptionBubble
+                              topic_name={option}
+                              backgroundColor={props.header?.backgroundColor}
+                              textColor={props.header?.textColor}
+                              borderColor={props.header?.backgroundColor}
+                              onOptionClick={() => optionSelect(option)}
                             />
-                          );
-                        }}
-                      </For>
-                    </div>
-                  )}
-                </>
-              )}
-            </For>
+                          )}
+                        </For>
+                      </div>
+                    )}
+
+                    {(!topics().length && chainType() !== "gpt_plus" && userSession()) ||
+                    (message.type === "userMessage" && loading() && index() === messages().length - 1) ? (
+                      <LoadingBubble />
+                    ) : null}
+
+                    {message.sourceDocuments && message.sourceDocuments.length && (
+                      <div style={{ display: "flex", "flex-direction": "row", width: "100%" }}>
+                        <For each={[...removeDuplicateURL(message)]}>
+                          {(src) => {
+                            const URL = isValidURL(src.metadata.source);
+                            return (
+                              <SourceBubble
+                                pageContent={URL ? URL.pathname : src.pageContent}
+                                metadata={src.metadata}
+                                onSourceClick={() => {
+                                  if (URL) {
+                                    window.open(src.metadata.source, "_blank");
+                                  } else {
+                                    setSourcePopupSrc(src);
+                                    setSourcePopupOpen(true);
+                                  }
+                                }}
+                              />
+                            );
+                          }}
+                        </For>
+                      </div>
+                    )}
+                  </>
+                )}
+              </For>
+            ) : (
+              <h3 class="text-center">No content has been provided.</h3>
+            )}
 
             {!userSession() && !sessionLoading() ? (
               <LoginPrompt
@@ -585,7 +594,7 @@ export const Bot = (props: BotProps & { class?: string; onMax?: () => void; isMa
               />
             ) : null}
           </div>
-          <Show when={chain() && userSession()}>
+          <Show when={chain() && userSession() && !noTopic()}>
             <TextInput
               backgroundColor={props.textInput?.backgroundColor}
               textColor={props.textInput?.textColor}
