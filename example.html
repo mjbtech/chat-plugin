@@ -1,17 +1,35 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Document</title>
   </head>
+  <style>
+    body {
+      margin: 0;
+      box-sizing: border-box;
+    }
+  </style>
   <body>
+    <chatgenius-fullchatbot></chatgenius-fullchatbot>
+
     <script type="module">
-      import Chatbot from "https://cdn.jsdelivr.net/gh/edsin-mjb/chatgenius-embed-chat@main/dist/web.js";
-      Chatbot.init({
-        chatflowid: "<id>",
-        apiHost: "<url>",
+      import Chatbot from "./dist/web.js";
+      Chatbot.initFull({
+        chatflowid: "65b780fe62e9c11e92f273eb",
+        apiHost: "http://localhost:4000",
+        tenantId: "d4537a10-d802-481f-8487-561685801db7",
       });
     </script>
+
+    <!-- <script type="module">
+  import Chatbot from "./dist/web.js";
+  Chatbot.init({
+    chatflowid: "65b780fe62e9c11e92f273eb",
+    apiHost: "http://localhost:4000",
+    tenantId: "d4537a10-d802-481f-8487-561685801db7",
+  });
+</script> -->
   </body>
 </html>

@@ -5,12 +5,13 @@ import {
   createChain,
   createUserSessionRequest,
   getChatflow,
+  getRelevantQuestion,
   postReview,
   sendMessageQuery,
   tenantDBLoad,
 } from "@/queries/sendMessageQuery";
 import socketIOClient from "socket.io-client";
-import { For, Show, createEffect, createSignal, onMount } from "solid-js";
+import { For, Show, createEffect, createSignal, onCleanup, onMount } from "solid-js";
 import { getCookie, setCookie } from "../utils/cookieUtil";
 import { Badge } from "./Badge";
 import { BotBubble } from "./bubbles/BotBubble";
@@ -67,6 +68,7 @@ export const Bot = (props: BotProps & { class?: string; onMax?: () => void; isMa
   let chatContainer: HTMLDivElement | undefined;
   let bottomSpacer: HTMLDivElement | undefined;
   let botContainer: HTMLDivElement | undefined;
+  const [isDesktop, setIsDesktop] = createSignal(window.innerWidth > 768);
 
   const [userInput, setUserInput] = createSignal("");
   const [loading, setLoading] = createSignal(false);
@@ -92,6 +94,19 @@ export const Bot = (props: BotProps & { class?: string; onMax?: () => void; isMa
   const [chain, setChain] = createSignal(false);
   const [chainType, setChainType] = createSignal("");
   const [noTopic, setNoTopic] = createSignal(false);
+  const [preSuggestionQuestions, setPreSuggestionQuestions] = createSignal<string[]>([]);
+
+  const handleResize = () => {
+    console.log(isDesktop());
+    setIsDesktop(window.innerWidth > 768);
+  };
+
+  createEffect(() => {
+    window.addEventListener("resize", handleResize);
+    onCleanup(() => {
+      window.removeEventListener("resize", handleResize);
+    });
+  });
 
   createEffect(async () => {
     const { chatflowid, apiHost, tenantId } = props;
@@ -153,7 +168,17 @@ export const Bot = (props: BotProps & { class?: string; onMax?: () => void; isMa
       setTopics(data.data.topics);
       if (data.data.topics.length === 1) {
         optionSelect(data.data.topics[0].name);
+        const relatedQuestions = await getRelevantQuestion({ apiHost, tenantId, query: data.data.topics[0].name });
+        console.log(relatedQuestions.data, JSON.parse(relatedQuestions.data?.content));
+        setPreSuggestionQuestions(JSON.parse(relatedQuestions.data?.content));
       } else {
+        const relatedQuestions = await getRelevantQuestion({
+          apiHost,
+          tenantId,
+          query: data.data.topics.map((topic: any) => topic.name).join(","),
+        });
+        console.log(relatedQuestions.data, JSON.parse(relatedQuestions.data?.content));
+        setPreSuggestionQuestions(JSON.parse(relatedQuestions.data?.content));
         setMessages((prev) => {
           return [
             ...prev,
@@ -468,6 +493,8 @@ export const Bot = (props: BotProps & { class?: string; onMax?: () => void; isMa
 
   console.log(chain(), "Chain");
 
+  console.log(preSuggestionQuestions());
+
   return (
     <>
       <div
@@ -595,6 +622,25 @@ export const Bot = (props: BotProps & { class?: string; onMax?: () => void; isMa
             ) : null}
           </div>
           <Show when={chain() && userSession() && !noTopic()}>
+            <Show when={messages().filter((message) => message.type === "userMessage").length === 0}>
+              <div class="px-4 absolute flex justify-evenly gap-2 bottom-[110px] w-full flex-wrap">
+                {preSuggestionQuestions()
+                  .slice(0, 4)
+                  .slice(isDesktop() ? 0 : 2)
+                  ?.map((question) => {
+                    return (
+                      <p
+                        class={`px-3 py-3 text-xs ${
+                          isDesktop() ? "w-[45%]" : "w-full"
+                        }  bg-slate-100 rounded-md cursor-pointer h-14 overflow-hidden text-ellipsis flex items-center`}
+                        onClick={() => handleSubmit(question)}
+                      >
+                        {question}
+                      </p>
+                    );
+                  })}
+              </div>
+            </Show>
             <TextInput
               backgroundColor={props.textInput?.backgroundColor}
               textColor={props.textInput?.textColor}
