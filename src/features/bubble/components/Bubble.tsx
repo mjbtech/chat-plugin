@@ -26,14 +26,13 @@ export const Bubble = (props: BubbleProps) => {
     isBotOpened() ? closeBot() : openBot();
   };
 
-  console.log(props.theme, "Theme");
-
   return (
     <>
       <style>{styles}</style>
       <BubbleButton {...bubbleProps.theme?.button} toggleBot={toggleBot} isBotOpened={isBotOpened()} />
       <div
         part="bot"
+        id="chatgenius-bot-container"
         style={{
           height: bubbleProps.theme?.chatWindow?.height
             ? `${bubbleProps.theme?.chatWindow?.height.toString()}px`
@@ -72,7 +71,7 @@ export const Bubble = (props: BubbleProps) => {
             tenantId={props.tenantId}
             apiHost={props.apiHost}
             header={props.theme?.header}
-            loginPrompt={props.theme?.loginPrompt}
+            loginPrompt={props.theme?.loginPrompt ?? props.theme?.login_prompt}
             poweredByVisibility={props.theme?.poweredByVisibility}
             onMax={() => {
               setMax(!isMax());

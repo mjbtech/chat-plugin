@@ -14,6 +14,10 @@ export type BubbleTheme = {
         field_name: string;
         is_required: boolean;
     }[];
+    login_prompt?: {
+        field_name: string;
+        is_required: boolean;
+    }[];
     chatWindow?: ChatWindowTheme;
     button?: ButtonTheme;
 };

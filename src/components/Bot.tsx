@@ -69,6 +69,10 @@ export const Bot = (props: BotProps & { class?: string; onMax?: () => void; isMa
   let bottomSpacer: HTMLDivElement | undefined;
   let botContainer: HTMLDivElement | undefined;
   const [isDesktop, setIsDesktop] = createSignal(window.innerWidth > 768);
+  // @ts-ignore
+  const botContainerElement = document
+    ?.querySelector("body > chatgenius-chatbot")
+    ?.shadowRoot.querySelector("#chatgenius-bot-container");
 
   const [userInput, setUserInput] = createSignal("");
   const [loading, setLoading] = createSignal(false);
@@ -98,8 +102,11 @@ export const Bot = (props: BotProps & { class?: string; onMax?: () => void; isMa
 
   const handleResize = () => {
     console.log(isDesktop());
-    setIsDesktop(window.innerWidth > 768);
+    console.log(botContainerElement?.clientWidth, "width");
+    setIsDesktop((botContainerElement?.clientWidth as number) > 768);
   };
+
+  console.log("current width", window.innerWidth);
 
   createEffect(() => {
     window.addEventListener("resize", handleResize);
@@ -167,18 +174,19 @@ export const Bot = (props: BotProps & { class?: string; onMax?: () => void; isMa
       }
       setTopics(data.data.topics);
       if (data.data.topics.length === 1) {
-        optionSelect(data.data.topics[0].name);
         const relatedQuestions = await getRelevantQuestion({ apiHost, tenantId, query: data.data.topics[0].name });
-        console.log(relatedQuestions.data, JSON.parse(relatedQuestions.data?.content));
-        setPreSuggestionQuestions(JSON.parse(relatedQuestions.data?.content));
+        setPreSuggestionQuestions(relatedQuestions.data);
+        optionSelect(data.data.topics[0].name);
       } else {
         const relatedQuestions = await getRelevantQuestion({
           apiHost,
           tenantId,
           query: data.data.topics.map((topic: any) => topic.name).join(","),
         });
-        console.log(relatedQuestions.data, JSON.parse(relatedQuestions.data?.content));
-        setPreSuggestionQuestions(JSON.parse(relatedQuestions.data?.content));
+
+        console.log(relatedQuestions, "Relevant Questions");
+
+        setPreSuggestionQuestions(relatedQuestions.data);
         setMessages((prev) => {
           return [
             ...prev,
@@ -187,6 +195,8 @@ export const Bot = (props: BotProps & { class?: string; onMax?: () => void; isMa
           ];
         });
       }
+
+      handleResize();
     }
     setLoading(false);
     scrollToBottom();
@@ -491,10 +501,9 @@ export const Bot = (props: BotProps & { class?: string; onMax?: () => void; isMa
     postReview(payload);
   };
 
-  console.log(chain(), "Chain");
-  console.log(props);
-
-  console.log(preSuggestionQuestions());
+  createEffect(() => {
+    console.log(preSuggestionQuestions(), "Pre suggestion");
+  });
 
   return (
     <>
@@ -513,7 +522,10 @@ export const Bot = (props: BotProps & { class?: string; onMax?: () => void; isMa
           title={props.header?.title}
           gotoTopic={gotoTopic}
           isViewTopic={selectedTopic() && Object.keys(selectedTopic()).length}
-          onMax={props.onMax}
+          onMax={() => {
+            if (typeof props.onMax === "function") props.onMax();
+            handleResize();
+          }}
           isMax={props.isMax}
         />
         <div class="flex w-full h-full justify-center">
@@ -623,7 +635,12 @@ export const Bot = (props: BotProps & { class?: string; onMax?: () => void; isMa
             ) : null}
           </div>
           <Show when={chain() && userSession() && !noTopic()}>
-            <Show when={messages().filter((message) => message.type === "userMessage").length === 0}>
+            <Show
+              when={
+                (topics().length === 1 && messages().filter((message) => message.type === "userMessage").length <= 1) ||
+                messages().filter((message) => message.type === "userMessage").length === 0
+              }
+            >
               <div class="px-4 absolute flex justify-evenly gap-2 bottom-[110px] w-full flex-wrap">
                 {preSuggestionQuestions()
                   .slice(0, 4)
