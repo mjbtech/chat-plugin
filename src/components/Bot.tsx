@@ -492,6 +492,7 @@ export const Bot = (props: BotProps & { class?: string; onMax?: () => void; isMa
   };
 
   console.log(chain(), "Chain");
+  console.log(props);
 
   console.log(preSuggestionQuestions());
 
