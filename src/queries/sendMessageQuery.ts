@@ -168,3 +168,11 @@ export const speechRecognition = async ({
     tenantId,
   });
 };
+
+export const getRelevantQuestion = async ({ apiHost = "http://localhost:3000", tenantId, query }: any) => {
+  return await sendMultipartRequest<any>({
+    method: "GET",
+    url: `${apiHost}/api/v1/common/get-relative-questions?topics=${query}`,
+    tenantId,
+  });
+};

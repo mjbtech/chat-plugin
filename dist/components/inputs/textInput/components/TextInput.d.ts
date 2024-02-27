@@ -12,6 +12,8 @@ type Props = {
         backgroundColor?: string;
         textColor?: string;
     };
+    preSuggestionQuestions?: string[];
+    onOptionClick?: any;
 };
 export declare const TextInput: (props: Props) => import("solid-js").JSX.Element;
 export {};

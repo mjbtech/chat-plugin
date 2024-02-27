@@ -94,4 +94,8 @@ export declare const speechRecognition: ({ apiHost, tenantId, body, }: SpeechRec
     data?: any;
     error?: Error | undefined;
 }>;
+export declare const getRelevantQuestion: ({ apiHost, tenantId, query }: any) => Promise<{
+    data?: any;
+    error?: Error | undefined;
+}>;
 //# sourceMappingURL=sendMessageQuery.d.ts.map

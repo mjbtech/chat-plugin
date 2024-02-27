@@ -18,6 +18,8 @@ type Props = {
     backgroundColor?: string;
     textColor?: string;
   };
+  preSuggestionQuestions?: string[];
+  onOptionClick?: any;
 };
 
 const defaultBackgroundColor = "#ffffff";
