@@ -184,8 +184,6 @@ export const Bot = (props: BotProps & { class?: string; onMax?: () => void; isMa
           query: data.data.topics.map((topic: any) => topic.name).join(","),
         });
 
-        console.log(relatedQuestions, "Relevant Questions");
-
         setPreSuggestionQuestions(relatedQuestions.data);
         setMessages((prev) => {
           return [
@@ -636,10 +634,11 @@ export const Bot = (props: BotProps & { class?: string; onMax?: () => void; isMa
           </div>
           <Show when={chain() && userSession() && !noTopic()}>
             <Show
-              when={
-                (topics().length === 1 && messages().filter((message) => message.type === "userMessage").length <= 1) ||
-                messages().filter((message) => message.type === "userMessage").length === 0
-              }
+              // when={
+              //   (topics().length === 1 && messages().filter((message) => message.type === "userMessage").length <= 1) ||
+              //   messages().filter((message) => message.type === "userMessage").length === 0
+              // }
+              when={false}
             >
               <div class="px-4 absolute flex justify-evenly gap-2 bottom-[110px] w-full flex-wrap">
                 {preSuggestionQuestions()
