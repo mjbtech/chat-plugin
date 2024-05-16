@@ -99,14 +99,17 @@ export const Bot = (props: BotProps & { class?: string; onMax?: () => void; isMa
   const [chainType, setChainType] = createSignal("");
   const [noTopic, setNoTopic] = createSignal(false);
   const [preSuggestionQuestions, setPreSuggestionQuestions] = createSignal<string[]>([]);
+  const [apiQuery, setApiQuery] = createSignal<string>();
+
+  // API Bot Parameter
+  const [apiInputs, setApiInputs] = createSignal<Record<string, any>>({});
+  let currentAPIInput = "";
 
   const handleResize = () => {
     console.log(isDesktop());
     console.log(botContainerElement?.clientWidth, "width");
     setIsDesktop((botContainerElement?.clientWidth as number) > 768);
   };
-
-  console.log("current width", window.innerWidth);
 
   createEffect(() => {
     window.addEventListener("resize", handleResize);
@@ -174,17 +177,17 @@ export const Bot = (props: BotProps & { class?: string; onMax?: () => void; isMa
       }
       setTopics(data.data.topics);
       if (data.data.topics.length === 1) {
-        const relatedQuestions = await getRelevantQuestion({ apiHost, tenantId, query: data.data.topics[0].name });
-        setPreSuggestionQuestions(relatedQuestions.data);
+        // const relatedQuestions = await getRelevantQuestion({ apiHost, tenantId, query: data.data.topics[0].name });
+        // setPreSuggestionQuestions(relatedQuestions.data);
         optionSelect(data.data.topics[0].name);
       } else {
-        const relatedQuestions = await getRelevantQuestion({
-          apiHost,
-          tenantId,
-          query: data.data.topics.map((topic: any) => topic.name).join(","),
-        });
+        // const relatedQuestions = await getRelevantQuestion({
+        //   apiHost,
+        //   tenantId,
+        //   query: data.data.topics.map((topic: any) => topic.name).join(","),
+        // });
 
-        setPreSuggestionQuestions(relatedQuestions.data);
+        // setPreSuggestionQuestions(relatedQuestions.data);
         setMessages((prev) => {
           return [
             ...prev,
@@ -259,7 +262,6 @@ export const Bot = (props: BotProps & { class?: string; onMax?: () => void; isMa
   // Handle form submission
   const handleSubmit = async (value: string) => {
     setUserInput(value);
-
     if (value.trim() === "") {
       return;
     }
@@ -300,6 +302,48 @@ export const Bot = (props: BotProps & { class?: string; onMax?: () => void; isMa
 
     // if (isChatFlowAvailableToStream()) body.socketIOClientId = socketIOClientId();
 
+    if (selectedTopic().type === "API_BOT") {
+      setApiInputs((prev) => ({
+        ...prev,
+        [currentAPIInput]: value,
+      }));
+
+      const result = getAPIInputs(selectedTopic());
+      if (typeof result === "string") {
+        setMessages((prevMessages) => [...prevMessages, { message: result, type: "apiMessage" }]);
+      } else {
+        if (!(apiQuery() && apiQuery()?.length)) {
+          setMessages((prev) => {
+            return [
+              ...prev,
+              { message: `Could you share your question about ${selectedTopic().name}?`, type: "apiMessage" },
+            ];
+          });
+          setApiQuery("Could you share your question about ");
+        } else {
+          await sendMessageQuery({
+            chatflowid: props.chatflowid,
+            apiHost: props.apiHost,
+            tenantId: props.tenantId,
+            session_id: socketIOClientId(),
+            userSessionId: userSession()?._id,
+            topic_id: chainType(),
+            body: {
+              question: value,
+              topic: selectedTopic(),
+              api_metadata: {
+                input: apiInputs(),
+                current_date: new Date().toISOString(),
+              },
+            },
+          });
+        }
+      }
+
+      setLoading(false);
+      return;
+    }
+
     const result = await sendMessageQuery({
       chatflowid: props.chatflowid,
       apiHost: props.apiHost,
@@ -309,6 +353,7 @@ export const Bot = (props: BotProps & { class?: string; onMax?: () => void; isMa
       topic_id: chainType(),
       body: {
         question: value,
+        topic: selectedTopic(),
       },
     });
 
@@ -459,9 +504,29 @@ export const Bot = (props: BotProps & { class?: string; onMax?: () => void; isMa
       setSelectedTopic(topic);
       setLoading(false);
       scrollToBottom();
-      setMessages((prev) => {
-        return [...prev, { message: `Please post your query on : ${option}`, type: "apiMessage" }];
-      });
+      console.log(topic, "@topic");
+      if (topic?.type === "API_BOT") {
+        // Call API
+        setApiQuery(undefined);
+        const result = getAPIInputs(topic);
+        if (typeof result === "string")
+          setMessages((prev) => {
+            return [...prev, { message: result, type: "apiMessage" }];
+          });
+      } else
+        setMessages((prev) => {
+          return [...prev, { message: `Could you share your question about ${option}?`, type: "apiMessage" }];
+        });
+    }
+  };
+
+  const getAPIInputs = (topic: any) => {
+    const { parameter } = topic.api_metadata;
+    for (const param of parameter) {
+      if (!(apiInputs().hasOwnProperty(param.name) && typeof apiInputs()[param.name] === param.type)) {
+        currentAPIInput = param.name;
+        return param.user_query;
+      }
     }
   };
 
