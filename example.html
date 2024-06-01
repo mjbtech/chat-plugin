@@ -1,4 +1,4 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
@@ -16,67 +16,10 @@
 
     <script type="module">
       import Chatbot from "./dist/web.js";
-      // Chatbot.init({
-      //   chatflowid: "65b780fe62e9c11e92f273eb",
-      //   apiHost: "http://localhost:4000",
-      //   tenantId: "d4537a10-d802-481f-8487-561685801db7",
-      //   theme: {
-      //     header: {
-      //       title: "AI Assistant",
-      //       subTitle: "Ask me anything..!",
-      //       avatar: "https://cdn-icons-png.flaticon.com/512/4712/4712035.png",
-      //       backgroundColor: "#3b81f6",
-      //       textColor: "#fff",
-      //     },
-      //     button: {
-      //       backgroundColor: "#3b81f6",
-      //       right: null,
-      //       bottom: null,
-      //       size: null,
-      //       iconColor: "#fff",
-      //       customIconSrc: null,
-      //     },
-      //     chatWindow: {
-      //       welcomeMessage: "Hello, how can i assist you?",
-      //       backgroundColor: null,
-      //       height: null,
-      //       width: null,
-      //       fontSize: null,
-      //       poweredByTextColor: null,
-      //       botMessage: {
-      //         backgroundColor: null,
-      //         textColor: null,
-      //         avatarSrc: null,
-      //       },
-      //       userMessage: {
-      //         backgroundColor: null,
-      //         textColor: null,
-      //         avatarSrc: null,
-      //       },
-      //       textInput: {
-      //         placeholder: null,
-      //         backgroundColor: null,
-      //         textColor: null,
-      //         sendButtonColor: null,
-      //       },
-      //     },
-      //     loginPrompt: [
-      //       {
-      //         field_name: "Email",
-      //         is_required: true,
-      //       },
-      //       {
-      //         field_name: "Contact",
-      //         is_required: false,
-      //       },
-      //     ],
-      //   },
-      // });
-      // import Chatbot from "https://cdn.jsdelivr.net/gh/edsin-mjb/chatgenius-embed-chat@v4.0.9/dist/web.js";
       Chatbot.init({
-        chatflowid: "650056c99dfdd58bc91910cf",
-        tenantId: "CHATGENIUS_INTERNAL",
-        apiHost: "http://localhost:4000",
+        chatflowid: "CHATFLOW_ID",
+        apiHost: "API_URL",
+        tenantId: "TENANT_ID",
         theme: {
           header: {
             title: "AI Assistant",
@@ -117,18 +60,71 @@
               sendButtonColor: null,
             },
           },
-          login_prompt: [
+          loginPrompt: [
             {
               field_name: "Email",
-              is_required: false,
-            },
-            {
-              field_name: "Contact",
-              is_required: false,
+              is_required: true,
             },
           ],
         },
       });
+      // import Chatbot from "https://cdn.jsdelivr.net/gh/edsin-mjb/chatgenius-embed-chat@v4.0.9/dist/web.js";
+      // Chatbot.init({
+      //   chatflowid: "650056c99dfdd58bc91910cf",
+      //   tenantId: "CHATGENIUS_INTERNAL",
+      //   apiHost: "http://localhost:4000",
+      //   theme: {
+      //     header: {
+      //       title: "AI Assistant",
+      //       subTitle: "Ask me anything..!",
+      //       avatar: "https://cdn-icons-png.flaticon.com/512/4712/4712035.png",
+      //       backgroundColor: "#3b81f6",
+      //       textColor: "#fff",
+      //     },
+      //     button: {
+      //       backgroundColor: "#3b81f6",
+      //       right: null,
+      //       bottom: null,
+      //       size: null,
+      //       iconColor: "#fff",
+      //       customIconSrc: null,
+      //     },
+      //     chatWindow: {
+      //       welcomeMessage: "Hello, how can i assist you?",
+      //       backgroundColor: null,
+      //       height: null,
+      //       width: null,
+      //       fontSize: null,
+      //       poweredByTextColor: null,
+      //       botMessage: {
+      //         backgroundColor: null,
+      //         textColor: null,
+      //         avatarSrc: null,
+      //       },
+      //       userMessage: {
+      //         backgroundColor: null,
+      //         textColor: null,
+      //         avatarSrc: null,
+      //       },
+      //       textInput: {
+      //         placeholder: null,
+      //         backgroundColor: null,
+      //         textColor: null,
+      //         sendButtonColor: null,
+      //       },
+      //     },
+      //     login_prompt: [
+      //       {
+      //         field_name: "Email",
+      //         is_required: false,
+      //       },
+      //       {
+      //         field_name: "Contact",
+      //         is_required: false,
+      //       },
+      //     ],
+      //   },
+      // });
     </script>
 
     <!-- <script type="module">

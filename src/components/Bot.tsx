@@ -308,40 +308,61 @@ export const Bot = (props: BotProps & { class?: string; onMax?: () => void; isMa
         [currentAPIInput]: value,
       }));
 
-      const result = getAPIInputs(selectedTopic());
-      if (typeof result === "string") {
-        setMessages((prevMessages) => [...prevMessages, { message: result, type: "apiMessage" }]);
-      } else {
-        if (!(apiQuery() && apiQuery()?.length)) {
-          setMessages((prev) => {
-            return [
-              ...prev,
-              { message: `Could you share your question about ${selectedTopic().name}?`, type: "apiMessage" },
-            ];
-          });
-          setApiQuery("Could you share your question about ");
+      if (selectedTopic()?.api_metadata?.parameter?.length) {
+        const result = getAPIInputs(selectedTopic());
+        if (typeof result === "string") {
+          setMessages((prevMessages) => [...prevMessages, { message: result, type: "apiMessage" }]);
         } else {
-          await sendMessageQuery({
-            chatflowid: props.chatflowid,
-            apiHost: props.apiHost,
-            tenantId: props.tenantId,
-            session_id: socketIOClientId(),
-            userSessionId: userSession()?._id,
-            topic_id: chainType(),
-            body: {
-              question: value,
-              topic: selectedTopic(),
-              api_metadata: {
-                input: apiInputs(),
-                current_date: new Date().toISOString(),
+          if (!(apiQuery() && apiQuery()?.length)) {
+            setMessages((prev) => {
+              return [
+                ...prev,
+                { message: `Could you share your question about ${selectedTopic().name}?`, type: "apiMessage" },
+              ];
+            });
+            setApiQuery("Could you share your question about ");
+          } else {
+            await sendMessageQuery({
+              chatflowid: props.chatflowid,
+              apiHost: props.apiHost,
+              tenantId: props.tenantId,
+              session_id: socketIOClientId(),
+              userSessionId: userSession()?._id,
+              topic_id: chainType(),
+              body: {
+                question: value,
+                topic: selectedTopic(),
+                api_metadata: {
+                  input: apiInputs(),
+                  current_date: new Date().toISOString(),
+                },
               },
-            },
-          });
+            });
+          }
         }
-      }
 
-      setLoading(false);
-      return;
+        setLoading(false);
+        return;
+      } else {
+        await sendMessageQuery({
+          chatflowid: props.chatflowid,
+          apiHost: props.apiHost,
+          tenantId: props.tenantId,
+          session_id: socketIOClientId(),
+          userSessionId: userSession()?._id,
+          topic_id: chainType(),
+          body: {
+            question: value,
+            topic: selectedTopic(),
+            api_metadata: {
+              input: apiInputs(),
+              current_date: new Date().toISOString(),
+            },
+          },
+        });
+        setLoading(false);
+        return;
+      }
     }
 
     const result = await sendMessageQuery({
@@ -508,15 +529,23 @@ export const Bot = (props: BotProps & { class?: string; onMax?: () => void; isMa
       if (topic?.type === "API_BOT") {
         // Call API
         setApiQuery(undefined);
-        const result = getAPIInputs(topic);
-        if (typeof result === "string")
+        console.log("@topic-length", topic);
+        if (topic?.api_metadata?.parameter?.length > 0) {
+          const result = getAPIInputs(topic);
+          if (typeof result === "string")
+            setMessages((prev) => {
+              return [...prev, { message: result, type: "apiMessage" }];
+            });
+          else
+            setMessages((prev) => {
+              return [...prev, { message: `Could you share your question about ${option}?`, type: "apiMessage" }];
+            });
+        } else {
           setMessages((prev) => {
-            return [...prev, { message: result, type: "apiMessage" }];
+            return [...prev, { message: `Could you share your question about ${option}?`, type: "apiMessage" }];
           });
-      } else
-        setMessages((prev) => {
-          return [...prev, { message: `Could you share your question about ${option}?`, type: "apiMessage" }];
-        });
+        }
+      }
     }
   };
 
